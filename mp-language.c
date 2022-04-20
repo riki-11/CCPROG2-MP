@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 
 // Max no. of letters per entry
 #define LETTERS 20
@@ -10,19 +11,19 @@
 // Max no. of entries
 #define ENTRIES 150
 
-// Struct for a single pair
+// Struct for a single pair (could do something like typedef char string[LETTERS])
 typedef struct Pair {
     char language[LETTERS];
     char translation[LETTERS];
 } pair;
 
 /* Struct for an entry in the database
-    aPairs - an array of pairs, there are a max. of 10 per entry
-    nCount - no. of pairs currently in entry, 0 by default
+    aPairs - an array of pairs, max. of 10 per entry
+    nPairs - no. of pairs currently in entry, 0 by default
 */
 typedef struct Entry {
     pair aPairs[PAIRS];
-    int nCount;
+    int nPairs;
 } entry;
 
 void initDatabase(entry aEntries[]);
@@ -32,10 +33,11 @@ void displayLTMenu();
 void getMMInput(int* nMMInput);
 void getMDInput(int* nMLInput);
 void getLTInput(int* nMLInput);
-void switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int*);
-void switchMDMenu(int nMLInput, entry aEntries[], int*);
-void addEntry(entry aEntries[], int*);
-void displayEntries(entry aEntries[], int*);
+void switchMainMenu(int nMMInput, int* nMLInput, entry*, int*);
+void switchMDMenu(int nMLInput, entry*, int*);
+void addEntry(entry*, int*);
+int pairExists(int, entry*, char*, char*);
+void displayEntries(entry*, int*);
 
 int
 main()
@@ -56,7 +58,7 @@ void initDatabase(entry aEntries[])
 {
     int i;
     for (i = 0; i < ENTRIES; i++)
-        aEntries[i].nCount = 0;
+        aEntries[i].nPairs = 0;
 }
 
 void
@@ -147,7 +149,7 @@ switchMDMenu(int nMLInput, entry aEntries[], int *nCount)
     {
         case 1:
             addEntry(aEntries, nCount);
-            displayEntries(aEntries, nCount); // add nCount
+            displayEntries(aEntries, nCount);
             break;
     }
 }
@@ -155,46 +157,91 @@ switchMDMenu(int nMLInput, entry aEntries[], int *nCount)
 void addEntry(entry aEntries[], int *nCount)
 {
     char cRepeat, sLanguage[LETTERS], sWord[LETTERS];
-    int pairCount = 0;
-    
-    do {
-        // Let user input a language and translation pair (stored in sLanguage and sWord first because not sure if gonna add it yet)
-        printf("Language: ");
-        scanf(" %s", sLanguage);
-        printf("Translation: ");
-        scanf(" %s", sWord);
+    int pairCount = 0, nFound = 0, newEntry = 1, i = 0;
+
+    // Try to add a new entry
+    printf("Enter Language: ");
+    scanf(" %s", sLanguage);
+    printf("Enter Translation: ");
+    scanf(" %s", sWord);
+
+    // Check if pair already exists in database of entries
+    while (i < *nCount && !nFound)
+    {
+        nFound = pairExists(i, aEntries, sLanguage, sWord);
+        i++;
+    }
+
+    // If pair does NOT exist yet
+    if (!nFound)
+    {
+        // Make NEW entry with this pair 
+        strcpy(aEntries[*nCount].aPairs[pairCount].language, sLanguage);
+        strcpy(aEntries[*nCount].aPairs[pairCount].translation, sWord);
         
+        // Add new entry to database, and update no. of pairs
+        aEntries[*nCount].nPairs += 1;
+        pairCount++;
+        
+        // Let user input more pairs if they wish
+        do {
+            printf("Do you wish to input another pair? (Y/N) ");
+            scanf(" %c", &cRepeat);
+            
+            // Basically repeat the stuff above, except we're just adding to the current pair (note to self: make code less repetitive)
+            if (cRepeat == 'Y' || cRepeat == 'y')
+            {
+                printf("Enter Language: ");
+                scanf(" %s", sLanguage);
+                printf("Enter Translation: ");
+                scanf(" %s", sWord);
 
-        // if pair NOT already exists
-            // Add pair to NEW entry and update no. of pairs inside current entry
-            strcpy(aEntries[*nCount].aPairs[pairCount].language, sLanguage);
-            strcpy(aEntries[*nCount].aPairs[pairCount].translation, sWord);
+                strcpy(aEntries[*nCount].aPairs[pairCount].language, sLanguage);
+                strcpy(aEntries[*nCount].aPairs[pairCount].translation, sWord);
 
-            *nCount += 1;
-            pairCount++;
-        // end of block
+                aEntries[*nCount].nPairs += 1;
+                pairCount++;
+            }
+        } while((cRepeat == 'Y' || cRepeat == 'y') && aEntries[*nCount].nPairs < 10);
 
-        // Terminate function if user no longer wishes to add pairs
-        printf("Do you wish to input another pair? (Y/N) ");
-        scanf(" %c", &cRepeat);
+        // Update no. of entries in the database
+        *nCount += 1;
+    }
+}
 
-    } while (cRepeat == 'Y' || cRepeat == 'y');
+// Returns 0 if pair doesn't exist, 1 if it does
+int pairExists(int nIndex, entry aEntries[], char *sLanguage, char *sWord)
+{
+    int i = 0, j;
 
-
-    /* check if pair already exists in some entry (language first, then word)
-        if PAIR EXISTS
-            if new entry
-                yes - create a new entry
-                no - go back to menu
-        if PAIR DOESN'T EXIST (DONE!)
-            add pair to new entry
-    */
+    while (i < PAIRS)
+    {
+        if (strcasecmp(sLanguage, aEntries[nIndex].aPairs[i].language) == 0 
+            && strcmp(sWord, aEntries[nIndex].aPairs[i].translation) == 0)
+        {
+            printf("Found duplicate @ entry no. %d\n", nIndex);
+            for (j = 0; j < aEntries[nIndex].nPairs; j++)
+                printf("Language: %s | Translation: %s\n", aEntries[nIndex].aPairs[j].language, aEntries[nIndex].aPairs[j].translation);
+            
+            // Immediately exit out of function
+            return 1;
+        }
+        i++;
+    }
+    return 0;
 }
 
 void displayEntries(entry aEntries[], int *nCount)
 {
+    int i, j;
+    printf("---------------\n");
     printf("There are currently %d entries in the database\n", *nCount);
-    printf("Language: %s Translation: %s\n", aEntries[0].aPairs[0].language, aEntries[0].aPairs[0].translation);
-    printf("Language: %s Translation: %s\n", aEntries[1].aPairs[1].language, aEntries[1].aPairs[1].translation);
-    printf("Language: %s Translation: %s\n", aEntries[2].aPairs[2].language, aEntries[2].aPairs[2].translation);
+
+    // fix this for loop later to properly show all the pairs inside an entry
+    for (i = 0; i < *nCount; i++)
+    {
+        printf("Entry No. %d\n", i);
+        for (j = 0; j < aEntries[i].nPairs; j++)
+            printf("Pair No. %d || Language %s | Translation: %s\n", j, aEntries[i].aPairs[j].language, aEntries[i].aPairs[j].translation);
+    }
 }
