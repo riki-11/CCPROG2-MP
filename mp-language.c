@@ -46,10 +46,17 @@ main()
     entry aEntries[ENTRIES];
 
     initDatabase(aEntries); // Initializes database of entries
-    displayMainMenu(); // Display Main Menu
-    getMMInput(&nMMInput); // User chooses between MD and LT
-    switchMainMenu(nMMInput, &nMLInput, aEntries, &nEntryCount); // Program processes user's input
     
+    // Always go back to Main Menu as long as user doesn't exit program 
+    do {
+        displayMainMenu(); // Display Main Menu
+        getMMInput(&nMMInput); // User chooses between MD and LT
+
+        if (nMMInput != 3)
+            switchMainMenu(nMMInput, &nMLInput, aEntries, &nEntryCount); // Program processes user's input
+        
+    } while (nMMInput != 3);
+
     return 0;
 }
 
@@ -67,6 +74,7 @@ displayMainMenu()
     printf("------------Main Menu-----------");
     printf("\n  [1] Manage Data Menu");
     printf("\n  [2] Language Tools Menu");
+    printf("\n  [3] Exit");
     printf("\n\n");
 }
 
@@ -84,7 +92,7 @@ displayMDMenu()
     printf("\n   [8] Search Translation");
     printf("\n   [9] Export");
     printf("\n  [10] Import");
-    printf("\n  [11] Exit");
+    printf("\n  [11] Back to Main Menu");
     printf("\n\n");
 }
 
@@ -94,7 +102,7 @@ displayLTMenu()
     printf("-------Language Tools Menu------");
     printf("\n  [1] Identify Main Language");
     printf("\n  [2] Simple Translation");
-    printf("\n  [3] Exit");
+    printf("\n  [3] Back to Main Menu");
     printf("\n\n");
 }
 
@@ -127,14 +135,24 @@ switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *nCount)
     switch(nMMInput)
     {
         case 1:
-            displayMDMenu();
-            getMDInput(nMLInput);
-            switchMDMenu(*nMLInput, aEntries, nCount);
+            // keep looping through this until user enters the int 11 to exit MD Menu
+            do {
+                displayMDMenu();
+                getMDInput(nMLInput);
+                if (*nMLInput != 11)
+                    switchMDMenu(*nMLInput, aEntries, nCount);
+            } while (*nMLInput != 11);
             break;
+
         case 2:
             displayLTMenu();
             getLTInput(nMLInput);
             break;
+        
+        case 3:
+            printf("Terminating Program\n");
+            return;
+
         default:
             printf("Invalid Input");
     }
@@ -144,20 +162,26 @@ switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *nCount)
 void
 switchMDMenu(int nMLInput, entry aEntries[], int *nCount)
 {
-    // put this on some sort of loop so that if we exit out of a menu option we come back
     switch(nMLInput)
     {
         case 1:
             addEntry(aEntries, nCount);
             displayEntries(aEntries, nCount);
             break;
+
+        // Exits MD Menu
+        case 11:
+            return;
+        
+        default:
+            printf("Invalid input\n");
     }
 }
 
 void addEntry(entry aEntries[], int *nCount)
 {
-    char cRepeat, sLanguage[LETTERS], sWord[LETTERS];
-    int pairCount = 0, nFound = 0, newEntry = 1, i = 0;
+    char cRepeat, newEntry, sLanguage[LETTERS], sWord[LETTERS];
+    int pairCount = 0, nFound = 0, i = 0;
 
     // Try to add a new entry
     printf("Enter Language: ");
@@ -166,11 +190,7 @@ void addEntry(entry aEntries[], int *nCount)
     scanf(" %s", sWord);
 
     // Check if pair already exists in database of entries
-    while (i < *nCount && !nFound)
-    {
-        nFound = pairExists(i, aEntries, sLanguage, sWord);
-        i++;
-    }
+    nFound = pairExists(*nCount, aEntries, sLanguage, sWord);
 
     // If pair does NOT exist yet
     if (!nFound)
@@ -182,8 +202,11 @@ void addEntry(entry aEntries[], int *nCount)
         // Add new entry to database, and update no. of pairs
         aEntries[*nCount].nPairs += 1;
         pairCount++;
-        
-        // Let user input more pairs if they wish
+
+        // Update no. of entries in the database
+        *nCount += 1;
+
+        // Let user input more pairs in the SAME entry if they wish
         do {
             printf("Do you wish to input another pair? (Y/N) ");
             scanf(" %c", &cRepeat);
@@ -196,38 +219,73 @@ void addEntry(entry aEntries[], int *nCount)
                 printf("Enter Translation: ");
                 scanf(" %s", sWord);
 
-                strcpy(aEntries[*nCount].aPairs[pairCount].language, sLanguage);
-                strcpy(aEntries[*nCount].aPairs[pairCount].translation, sWord);
+                nFound = pairExists(*nCount, aEntries, sLanguage, sWord);
 
-                aEntries[*nCount].nPairs += 1;
-                pairCount++;
+                // If new pair does not exist elsewhere
+                if (!nFound)
+                {
+                    // Add to aEntries[index-1] because we had to increment nCount
+                    strcpy(aEntries[*nCount-1].aPairs[pairCount].language, sLanguage);
+                    strcpy(aEntries[*nCount-1].aPairs[pairCount].translation, sWord);
+
+                    aEntries[*nCount-1].nPairs += 1;
+                    pairCount++;
+                }
             }
-        } while((cRepeat == 'Y' || cRepeat == 'y') && aEntries[*nCount].nPairs < 10);
+        } while((cRepeat == 'Y' || cRepeat == 'y') && aEntries[*nCount-1].nPairs < 10);
 
-        // Update no. of entries in the database
-        *nCount += 1;
     }
+    // If pair DOES exist, ask if this is new entry
+    else
+    {
+        printf("Pair already exists, is this a new entry?\n");
+        scanf(" %c", &newEntry);
+
+        if (newEntry == 'Y' || cRepeat == 'Y')
+        {
+            printf("making new entry...\n");
+            // do the add entry stuff
+        }
+        else
+        {
+            printf("Returning to menu...\n");
+            return;
+        }
+    }
+
 }
 
 // Returns 0 if pair doesn't exist, 1 if it does
-int pairExists(int nIndex, entry aEntries[], char *sLanguage, char *sWord)
+int pairExists(int nEntryCount, entry aEntries[], char *sLanguage, char *sWord)
 {
-    int i = 0, j;
+    int i, j = 0, k;
 
-    while (i < PAIRS)
+    // Go through each entry
+    for (i = 0; i < nEntryCount; i++)
     {
-        if (strcasecmp(sLanguage, aEntries[nIndex].aPairs[i].language) == 0 
-            && strcmp(sWord, aEntries[nIndex].aPairs[i].translation) == 0)
+        printf("Currently at entry %d\n\n", i);
+
+        // Go through each pair in the entry
+        for  (j = 0; j < PAIRS; j++)
         {
-            printf("Found duplicate @ entry no. %d\n", nIndex);
-            for (j = 0; j < aEntries[nIndex].nPairs; j++)
-                printf("Language: %s | Translation: %s\n", aEntries[nIndex].aPairs[j].language, aEntries[nIndex].aPairs[j].translation);
-            
-            // Immediately exit out of function
-            return 1;
+            printf("Currently at pair %d\n\n", j);
+
+            // Checks language case-insensitively, checks word case-sensitively
+            if (strcasecmp(sLanguage, aEntries[i].aPairs[j].language) == 0
+                && strcmp(sWord, aEntries[i].aPairs[j].translation) == 0)
+            {
+                printf("Found duplicate @ entry no. %d\n", i);
+                
+                // Print this entry's information
+                for (k = 0; k < aEntries[i].nPairs; k++)
+                    printf("Language: %s | Translation: %s\n", aEntries[i].aPairs[k].language, aEntries[i].aPairs[k].translation);
+                
+                // Immediately exit out of function
+                return 1;
+            }
         }
-        i++;
     }
+
     return 0;
 }
 
@@ -242,6 +300,6 @@ void displayEntries(entry aEntries[], int *nCount)
     {
         printf("Entry No. %d\n", i);
         for (j = 0; j < aEntries[i].nPairs; j++)
-            printf("Pair No. %d || Language %s | Translation: %s\n", j, aEntries[i].aPairs[j].language, aEntries[i].aPairs[j].translation);
+            printf("Pair No. %d || Language: %s | Translation: %s\n", j, aEntries[i].aPairs[j].language, aEntries[i].aPairs[j].translation);
     }
 }
