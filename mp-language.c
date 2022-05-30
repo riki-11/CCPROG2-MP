@@ -42,7 +42,7 @@ int pairExists(entry*, int, str, str);
 void addPair(entry*, int, int, char*, char*);
 char makeNewEntry(entry*, int*, str, str);
 void addTranslation(entry*, int);
-void search(entry*, int, str, str, int*);
+int search(entry*, int, str, str, int*);
 void displayEntries(entry*, int);
 
 int
@@ -272,7 +272,7 @@ int pairExists(entry aEntries[], int nCount, str sLanguage, str sWord)
                 && strcmp(sWord, aEntries[i].aPairs[j].translation) == 0)
             {
                 printf("--------------------------------\n");
-                printf("Found pair @ entry no. %d\n", i + 1);
+                printf("Found pair @ entry no. %d\n\n", i + 1);
                 
                 // Print this entry's information
                 for (k = 0; k < aEntries[i].nPairs; k++)
@@ -306,7 +306,7 @@ void addPair(entry aEntries[], int nIndex, int nPairCount, str sLanguage, str sW
 
     // If current entry reached max no. of pairs, notify user
     if (aEntries[nIndex].nPairs >= 10)
-        printf("Entry has reached the maximum no. of language-translation pairs");
+        printf("Entry has reached the maximum no. of language-translation pairs\n");
     
 }
 
@@ -331,9 +331,14 @@ char makeNewEntry(entry aEntries[], int *pCount, str sLanguage, str sWord)
     // Let user input more pairs in the SAME entry
     do 
     {
-        printf("Do you want to input another pair? (Y/N) ");
-        scanf(" %c", &cRepeat);
-        
+        do
+        {
+            printf("Do you want to input another pair? (Y/N) ");
+            scanf(" %c", &cRepeat);
+            if (cRepeat != 'Y' && cRepeat != 'y' && cRepeat != 'N' && cRepeat != 'n')
+                printf("Invalid input. Please try again.\n");
+        } while (cRepeat != 'Y' && cRepeat != 'y' && cRepeat != 'N' && cRepeat != 'n'); 
+
         if (cRepeat == 'Y' || cRepeat == 'y')
         {
             inputPair(sLanguage, sWord);
@@ -369,9 +374,6 @@ char makeNewEntry(entry aEntries[], int *pCount, str sLanguage, str sWord)
     // While user wants to place new pairs AND while max no. of pairs hasn't been reached
     } while ((cRepeat == 'Y' || cRepeat == 'y') && aEntries[*pCount-1].nPairs < 10);
 
-    if (aEntries[*pCount-1].nPairs >= 10)
-        printf("MAX. NO. OF PAIRS REACHED!\n");
-
     return cRepeat;
 }
 
@@ -389,67 +391,76 @@ void addTranslation(entry aEntries[], int nCount)
     printf("----- Input pair to search ----\n");
     inputPair(sLanguage, sWord);
 
-    printf("\n---- FINDING PAIR ----\n");
+    printf("\n---- SEARCHING FOR PAIR ----\n");
 
     // pairExists will return no. of duplicate pairs
     nPairs = pairExists(aEntries, nCount, sLanguage, sWord);
     
-    // If no existing entry contains indicated pair
+    // Pair was NOT found in ANY entry
     if (!nPairs)
     {
         printf("An entry with this pair does not exist. Use the Add Entry option to create a new entry with this pair.\n\n");
         return;
     }
 
-    // If exactly one entry contains this pair
+    // Pair was found in exactly ONE entry
     else if (nPairs == 1)
     {
         // find the entry that contains the searched pair
-        search(aEntries, nCount, sLanguage, sWord, aDuplicates);
+        nIndex = search(aEntries, nCount, sLanguage, sWord, aDuplicates);
 
-        // add a new pair to this entry by searching aDuplicates for a non-zero value, indicating a duplicate pair was found there
-        // could still be optimized
-        for (nIndex = 0; nIndex < nCount; nIndex++)
+        // If entry already has 10 pairs, can't add anymore
+        if (aEntries[nIndex].nPairs >= 10)
         {
-            if (aDuplicates[nIndex])
+            printf("This entry already has 10 entries. Returning to Manage Data Menu...\n");
+            return;
+        }
+
+        printf("\nInput new pair to be added to this entry\n"); // what if user inputs something already in the entry?
+        do
+        {
+            inputPair(sLanguage, sWord);
+
+            // add pair to the entry, nIndex will locate position of entry
+            // aEntries[nIndex].nPair will act as an index for the new pair's position (current no. of pairs = index to be inserted at)
+            addPair(aEntries, nIndex, aEntries[nIndex].nPairs, sLanguage, sWord);
+            printf("Successfully added language-translation pair!\n");    
+            
+            // If haven't reached max no. of pairs
+            if (aEntries[nIndex].nPairs < 10)
             {
-                printf("\nPair was found at entry no. %d\n", nIndex + 1);
-                printf("\nInput new pair to be added to this entry\n"); // what if user inputs something already in the entry?
                 do
                 {
-                    inputPair(sLanguage, sWord);
-
-                    // add pair to the entry, nIndex will locate position of entry
-                    // aEntries[nIndex].nPair will act as an index for the new pair's position (current no. of pairs = index to be inserted at)
-                    addPair(aEntries, nIndex, aEntries[nIndex].nPairs, sLanguage, sWord);
-                    printf("Successfully added language-translation pair!\n");    
-                    
-                    // If haven't reached max no. of pairs
-                    if (aEntries[nIndex].nPairs < 10)
-                    {
-                        printf("Do you want to input another pair? (Y/N) ");
-                        scanf(" %c", &cRepeat);
-                    }
-                } while ((cRepeat == 'Y' || cRepeat == 'y') && aEntries[nIndex].nPairs < 10);
-                return; // so that any succeeding entries don't need to be checked
+                    printf("Do you want to input another pair? (Y/N) ");
+                    scanf(" %c", &cRepeat);
+                    if (cRepeat != 'Y' && cRepeat != 'y' && cRepeat != 'N' && cRepeat != 'n')
+                        printf("Invalid input. Please try again.\n");
+                } while (cRepeat != 'Y' && cRepeat != 'y' && cRepeat != 'N' && cRepeat != 'n');     
             }
-            
-        }
+        } while ((cRepeat == 'Y' || cRepeat == 'y') && aEntries[nIndex].nPairs < 10);
+        return; // so that any succeeding entries don't need to be checked
+    
     }
 
-    // pair was found in more than one entry
+    // Pair was found in more than one entry
     else 
     {
-        // aDuplicates has the positions of all the entries containing the searched pair
-        search(aEntries, nCount, sLanguage, sWord, aDuplicates);
-        
+        // Store which entries contain the pair
+        for (i = 0; i < nPairs; i++)
+        {
+            nIndex = search(aEntries, nCount, sLanguage, sWord, aDuplicates);
+
+            // Store the entry no. in its corresponding index (e.x., if 2nd contains pair, then aDuplicates[1] = 2)
+            aDuplicates[nIndex] = nIndex + 1;
+        }
+
         // After showing the user all the duplicate entries, ask where to add a new pair
-        printf("\nWhich entry do you want to add to?\n");
+        printf("\nWhich entry do you want to add to? ");
         scanf("%d", &nIndex);
         nIndex--; // make sure nIndex matches array positioning
 
-        // Input is valid if aDuplicates found the searched pair at that index inputted by the user
-        if (aDuplicates[nIndex])            
+        // Input is valid if aDuplicates found the searched pair at that index inputted by the user and entry has less than 10 pairs
+        if (aDuplicates[nIndex] && aEntries[nIndex].nPairs < 10)            
         {
             printf("\nInput new pair to be added to this entry\n"); // what if user inputs something already in the entry? 
             do
@@ -458,10 +469,19 @@ void addTranslation(entry aEntries[], int nCount)
                 addPair(aEntries, nIndex, aEntries[nIndex].nPairs, sLanguage, sWord);
                 printf("Successfully added language-translation pair!\n");
 
-                printf("Do you want to input another pair? (Y/N) ");
-                scanf(" %c", &cRepeat);
+                do
+                {
+                    printf("Do you want to input another pair? (Y/N) ");
+                    scanf(" %c", &cRepeat);
+                    if (cRepeat != 'Y' && cRepeat != 'y' && cRepeat != 'N' && cRepeat != 'n')
+                        printf("Invalid input. Please try again.\n");
+                } while (cRepeat != 'Y' && cRepeat != 'y' && cRepeat != 'N' && cRepeat != 'n');   
             } while ((cRepeat == 'Y' || cRepeat == 'y') && aEntries[nIndex].nPairs < 10);
         }
+        // If desired entry contains 10 pairs already
+        else if (aEntries[nIndex].nPairs >= 10)
+            printf("This entry already has 10 entries. Returning to Manage Data Menu...\n");
+        // If user inputs an entry index that DOESN'T contain the inputted pair
         else
             printf("Invalid entry, pair was not found there.\n"); // in future, can add a loop to let user input again for better UX.
     }
@@ -474,8 +494,10 @@ void addTranslation(entry aEntries[], int nCount)
         @param sLanguage - Language to be checked
         @param sWord - Word to be checked
         @param aDuplicates - array that keeps track of entries that contain the pair
+    returns index of entry where language-translation pair was found, -1 if otherwise
 */
-void search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplicates[])
+// i can have it return an int for the index of the element that was found
+int search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplicates[])
 {
     int i, j;
     
@@ -484,16 +506,12 @@ void search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplica
         // Go through each pair per entry and record any entries containing the pair being searched for
         for  (j = 0; j < PAIRS; j++)
             // Checks language case-insensitively, checks word case-sensitively
+            // and check if pair has already been found at this entry (aDuplicates[i] = 0 we haven't recorded the entry that contains the pair)
             if (strcasecmp(sLanguage, aEntries[i].aPairs[j].language) == 0
-                && strcmp(sWord, aEntries[i].aPairs[j].translation) == 0)
-                // Record no. of entry if duplicate pair is found here
-                aDuplicates[i] = i + 1;
-
-    // This part is just for visualization, will remove later on
-    printf("{");
-    for (i = 0; i < nCount; i++)
-        printf(" %d ", aDuplicates[i]);
-    printf("}\n");
+                && strcmp(sWord, aEntries[i].aPairs[j].translation) == 0 && !aDuplicates[i])
+                    // Return the index of the entry where the pair was found
+                    return i;
+    return -1;
 }
 
 // Function for displaying all entries in database
@@ -507,7 +525,7 @@ void displayEntries(entry aEntries[], int nCount)
 
     for (i = 0; i < nCount; i++)
     {
-        printf("ENTRY NO. %d\n\n", i + 1, aEntries[i].nPairs);
+        printf("ENTRY NO. %d\n\n", i + 1);
         for (j = 0; j < aEntries[i].nPairs; j++)
             printf("Pair No. %d || Language: %s | Translation: %s\n", j + 1, aEntries[i].aPairs[j].language, aEntries[i].aPairs[j].translation);
         printf("--------------------------------\n\n");
