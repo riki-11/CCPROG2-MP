@@ -394,8 +394,6 @@ void addTranslation(entry aEntries[], int nCount)
     // pairExists will return no. of duplicate pairs
     nPairs = pairExists(aEntries, nCount, sLanguage, sWord);
     
-    // will add a do while loop here (wait why, past self?)
-
     // If no existing entry contains indicated pair
     if (!nPairs)
     {
@@ -490,12 +488,13 @@ void search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplica
                 && strcmp(sWord, aEntries[i].aPairs[j].translation) == 0)
                 // Record no. of entry if duplicate pair is found here
                 aDuplicates[i] = i + 1;
+
+    // This part is just for visualization, will remove later on
     printf("{");
     for (i = 0; i < nCount; i++)
         printf(" %d ", aDuplicates[i]);
     printf("}\n");
 }
-
 
 // Function for displaying all entries in database
 void displayEntries(entry aEntries[], int nCount)
