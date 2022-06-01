@@ -322,7 +322,7 @@ void addPair(entry aEntries[], int nIndex, int nPairCount, str sLanguage, str sW
 char makeNewEntry(entry aEntries[], int *pCount, str sLanguage, str sWord)
 {
     char cRepeat, newEntry;
-    int nFound, pairCount = 0;
+    int nFound;
 
     // Create new entry, add the pair to it, and update no. of entries
     addPair(aEntries, *pCount, aEntries[*pCount].nPairs, sLanguage, sWord);
@@ -514,21 +514,61 @@ int search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplicat
     return -1;
 }
 
+
+void modifyEntry()
+{
+    // call displayEntries then ask for user input on which entry to pick
+}
+
 // Function for displaying all entries in database
 void displayEntries(entry aEntries[], int nCount)
 {
-    int i, j;
-
+    char ch = 'N';
+    int i = 0, j = 0;
     printf("\n--------------------------------\n");
     printf("%d entries in the database\n", nCount);
     printf("--------------------------------\n\n");
 
-    for (i = 0; i < nCount; i++)
+    // While there's entries to show and while user hasn't exited function
+    while (i < nCount && i >= 0 && (ch == 'N' || ch == 'n' || ch == 'P' || ch == 'p'))
     {
-        printf("ENTRY NO. %d\n\n", i + 1);
+        // Print the entry and its pairs
+        printf("--------------------------------\n");
+        printf("Entry No. %d with %d pairs\n\n", i + 1, aEntries[i].nPairs);
         for (j = 0; j < aEntries[i].nPairs; j++)
             printf("Pair No. %d || Language: %s | Translation: %s\n", j + 1, aEntries[i].aPairs[j].language, aEntries[i].aPairs[j].translation);
-        printf("--------------------------------\n\n");
+        printf("--------------------------------\n");
+
+        // GUI printing
+        // If only one entry
+        if (nCount == 1)
+            printf("              Exit              \n");
+        // If currently at first of multiple entries
+        else if (i == 0 && nCount > 1)
+            printf("                Exit        Next\n");
+        // If at last of multiple entries
+        else if (i == nCount - 1)
+            printf("Previous        Exit            \n");
+        // If not at last or first of multiple entries
+        else
+            printf("Previous        Exit        Next\n");
+
+        do
+        {
+            scanf(" %c", &ch);
+            if (ch == 'N' || ch == 'n')
+                i++;
+            else if (ch == 'P' || ch == 'p')
+                i--;
+            else if (ch == 'X' || ch == 'x')
+            {
+                printf("Exiting...\n\n");
+                return;
+            }
+            
+            if (ch != 'N' && ch != 'n' && ch != 'P' && ch != 'p' && ch != 'X' && ch != 'x')
+                printf("Invalid input.\n");
+
+        } while (ch != 'N' && ch != 'n' && ch != 'P' && ch != 'p' && ch != 'X' && ch != 'x');
     }
-    printf("\n--------------------------------\n\n");
 }
