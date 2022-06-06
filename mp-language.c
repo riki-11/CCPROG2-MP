@@ -43,6 +43,7 @@ void addPair(entry*, int, int, char*, char*);
 char makeNewEntry(entry*, int*, str, str);
 void addTranslation(entry*, int);
 int search(entry*, int, str, str, int*);
+void modifyEntry(entry*, int);
 void displayEntries(entry*, int);
 
 int
@@ -77,7 +78,7 @@ void initDatabase(entry aEntries[])
 void
 displayMainMenu()
 {
-    printf("------------Main Menu-----------");
+    printf("\n------------Main Menu-----------");
     printf("\n  [1] Manage Data Menu");
     printf("\n  [2] Language Tools Menu");
     printf("\n  [3] Exit");
@@ -87,7 +88,7 @@ displayMainMenu()
 void
 displayMDMenu()
 {
-    printf("---------Manage Data Menu--------");
+    printf("\n---------Manage Data Menu--------");
     printf("\n   [1] Add Entry");
     printf("\n   [2] Add Translations");
     printf("\n   [3] Modify Entry");
@@ -105,7 +106,7 @@ displayMDMenu()
 void
 displayLTMenu()
 {
-    printf("-------Language Tools Menu------");
+    printf("\n-------Language Tools Menu------");
     printf("\n  [1] Identify Main Language");
     printf("\n  [2] Simple Translation");
     printf("\n  [3] Back to Main Menu");
@@ -176,12 +177,16 @@ switchMDMenu(int nMLInput, entry aEntries[], int *pCount)
         case 2:
             addTranslation(aEntries, *pCount);
             break;
+        case 3:
+            modifyEntry(aEntries, *pCount);
+            break;
         case 6:
             displayEntries(aEntries, *pCount);
             break;
 
         // Exits MD Menu
         case 11:
+            printf("Exiting to Main Menu...\n");
             return;
         
         default:
@@ -321,6 +326,7 @@ void addPair(entry aEntries[], int nIndex, int nPairCount, str sLanguage, str sW
 */  
 char makeNewEntry(entry aEntries[], int *pCount, str sLanguage, str sWord)
 {
+    // create  a sort function
     char cRepeat, newEntry;
     int nFound;
 
@@ -496,7 +502,6 @@ void addTranslation(entry aEntries[], int nCount)
         @param aDuplicates - array that keeps track of entries that contain the pair
     returns index of entry where language-translation pair was found, -1 if otherwise
 */
-// i can have it return an int for the index of the element that was found
 int search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplicates[])
 {
     int i, j;
@@ -515,9 +520,79 @@ int search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplicat
 }
 
 
-void modifyEntry()
+void modifyEntry(entry aEntries[], int nCount)
 {
-    // call displayEntries then ask for user input on which entry to pick
+    int i, nEntryChoice = 0, nPairChoice;
+    char cModPair;
+    do
+    {
+           // call displayEntries then ask for user input on which entry to pick
+        if (nEntryChoice == 0) 
+        {
+            printf("\nOpening list of entries... Please exit (X/x) the list before selecting an entry to modify\n");
+            displayEntries(aEntries, nCount);
+        }
+
+        printf("Which entry do you wish to modify? Press 0 if you wish to view the list of entries again: ");
+        scanf("%d", &nEntryChoice);
+
+        // restart loop if user wants to view list of entries again, continue otherwise
+        // If valid entry is selected
+        if (nEntryChoice >= 1 && nEntryChoice <= nCount)
+        {
+            // Adjust nEntryChoice for array-indexing
+            nEntryChoice--;
+
+            // Show all information and pairs for selected entry
+            printf("Modifying this entry:\n");
+            printf("--------------------------------\n");
+            printf("Entry No. %d with %d pair/s\n\n", nEntryChoice + 1, aEntries[nEntryChoice].nPairs);
+            for (i = 0; i < aEntries[i].nPairs; i++)
+                printf("Pair No. %d || Language: %s | Translation: %s\n", i + 1, aEntries[nEntryChoice].aPairs[i].language, aEntries[nEntryChoice].aPairs[i].translation);
+            printf("--------------------------------\n");
+
+            // Prompt user for pair to modify
+            printf("\nWhich pair do you wish to modify: ");
+            scanf("%d", &nPairChoice);
+
+            // If user selected valid pair within selected entry
+            if (nPairChoice >= 1 &&  nPairChoice <= aEntries[nEntryChoice].nPairs)
+            {
+                // Adjust nPairChoice for array-indexing
+                nPairChoice--;
+
+                printf("Modify the language or translation? ('L' - language | 'T' - translation | 'X' - Exit)\n");
+                scanf(" %c", &cModPair);
+                switch (cModPair)
+                {
+                    case 'L':
+                    case 'l':
+                        printf("Modifying language of entry no. %d pair no. %d\n", nEntryChoice + 1, nPairChoice + 1);
+                        break;
+                    
+                    case 'T':
+                    case 't':
+                        printf("Modifying translation of entry no. %d pair no. %d\n", nEntryChoice + 1, nPairChoice + 1);
+                        break;
+
+                    case 'X':
+                    case 'x':
+                        printf("\nReturning to Main Menu...\n\n");
+                        break;
+                    default:
+                        printf("\nInvalid input. Returning to Main Menu...\n\n");
+                        break;
+                }
+            }
+            else
+                printf("Invalid pair. Returning to Manage Data Menu...\n");
+            
+        }
+        // If invalid entry is selected
+        else if ((nEntryChoice <= 1 && nEntryChoice != 0) || nEntryChoice > nCount)
+            printf("Invalid entry.  Returning to Manage Data Menu...\n");
+
+    } while (nEntryChoice == 0);
 }
 
 // Function for displaying all entries in database
@@ -534,7 +609,7 @@ void displayEntries(entry aEntries[], int nCount)
     {
         // Print the entry and its pairs
         printf("--------------------------------\n");
-        printf("Entry No. %d with %d pairs\n\n", i + 1, aEntries[i].nPairs);
+        printf("Entry No. %d with %d pair/s\n\n", i + 1, aEntries[i].nPairs);
         for (j = 0; j < aEntries[i].nPairs; j++)
             printf("Pair No. %d || Language: %s | Translation: %s\n", j + 1, aEntries[i].aPairs[j].language, aEntries[i].aPairs[j].translation);
         printf("--------------------------------\n");
@@ -553,6 +628,7 @@ void displayEntries(entry aEntries[], int nCount)
         else
             printf("Previous        Exit        Next\n");
 
+        // Section for the "page-turning"-esque specification.
         do
         {
             scanf(" %c", &ch);
