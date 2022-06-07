@@ -292,28 +292,6 @@ int pairExists(entry aEntries[], int nCount, str sLanguage, str sWord)
     return nFound;
 }
 
-/*
-    Function for adding a pair to an entry
-        @param aEntries - array of Entries
-        @param nCount - no. of entries in database
-        @param nPairCount - no. of pairs in the entry that is being updated
-        @param sLanguage - Language to be checked
-        @param sWord - Word to be checked
-*/
-void addPair(entry aEntries[], int nIndex, int nPairCount, str sLanguage, str sWord)
-{
-    // Add a pair to designated entry
-    strcpy(aEntries[nIndex].aPairs[nPairCount].language, sLanguage);
-    strcpy(aEntries[nIndex].aPairs[nPairCount].translation, sWord);
-
-    // Update no. of pairs
-    aEntries[nIndex].nPairs += 1;
-
-    // If current entry reached max no. of pairs, notify user
-    if (aEntries[nIndex].nPairs >= 10)
-        printf("Entry has reached the maximum no. of language-translation pairs\n");
-    
-}
 
 /*
     Function for ACTUALLY creating the entry itself (separate from addEntry)
@@ -381,6 +359,29 @@ char makeNewEntry(entry aEntries[], int *pCount, str sLanguage, str sWord)
     } while ((cRepeat == 'Y' || cRepeat == 'y') && aEntries[*pCount-1].nPairs < 10);
 
     return cRepeat;
+}
+
+/*
+    Function for adding a pair to an entry
+        @param aEntries - array of Entries
+        @param nCount - no. of entries in database
+        @param nPairCount - no. of pairs in the entry that is being updated
+        @param sLanguage - Language to be checked
+        @param sWord - Word to be checked
+*/
+void addPair(entry aEntries[], int nIndex, int nPairCount, str sLanguage, str sWord)
+{
+    // Add a pair to designated entry
+    strcpy(aEntries[nIndex].aPairs[nPairCount].language, sLanguage);
+    strcpy(aEntries[nIndex].aPairs[nPairCount].translation, sWord);
+
+    // Update no. of pairs
+    aEntries[nIndex].nPairs += 1;
+
+    // If current entry reached max no. of pairs, notify user
+    if (aEntries[nIndex].nPairs >= 10)
+        printf("Entry has reached the maximum no. of language-translation pairs\n");
+    
 }
 
 /*
@@ -522,8 +523,10 @@ int search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplicat
 
 void modifyEntry(entry aEntries[], int nCount)
 {
-    int i, nEntryChoice = 0, nPairChoice;
     char cModPair;
+    str sLanguage, sWord;
+    int i, nEntryChoice = 0, nPairChoice;
+
     do
     {
            // call displayEntries then ask for user input on which entry to pick
@@ -533,7 +536,7 @@ void modifyEntry(entry aEntries[], int nCount)
             displayEntries(aEntries, nCount);
         }
 
-        printf("Which entry do you wish to modify? Press 0 if you wish to view the list of entries again: ");
+        printf("Which entry do you wish to modify? Press 0 to view the list of entries again: ");
         scanf("%d", &nEntryChoice);
 
         // restart loop if user wants to view list of entries again, continue otherwise
@@ -544,7 +547,7 @@ void modifyEntry(entry aEntries[], int nCount)
             nEntryChoice--;
 
             // Show all information and pairs for selected entry
-            printf("Modifying this entry:\n");
+            printf("\nModifying this entry:\n");
             printf("--------------------------------\n");
             printf("Entry No. %d with %d pair/s\n\n", nEntryChoice + 1, aEntries[nEntryChoice].nPairs);
             for (i = 0; i < aEntries[i].nPairs; i++)
@@ -563,22 +566,34 @@ void modifyEntry(entry aEntries[], int nCount)
 
                 printf("Modify the language or translation? ('L' - language | 'T' - translation | 'X' - Exit)\n");
                 scanf(" %c", &cModPair);
+                
+                // add feature to prompt user if they wish to modify another pair
+
                 switch (cModPair)
                 {
                     case 'L':
                     case 'l':
-                        printf("Modifying language of entry no. %d pair no. %d\n", nEntryChoice + 1, nPairChoice + 1);
+                        printf("Input new language to replace \"%s\": ", aEntries[nEntryChoice].aPairs[nPairChoice].language);
+                        scanf("%s", sLanguage);
+                        // add checking if string is valid? (i.e., at least 1 char)
+                        printf("Replacing %s with %s...\n", aEntries[nEntryChoice].aPairs[nPairChoice].language, sLanguage);
+                        strcpy(aEntries[nEntryChoice].aPairs[nPairChoice].language, sLanguage);
                         break;
                     
                     case 'T':
                     case 't':
-                        printf("Modifying translation of entry no. %d pair no. %d\n", nEntryChoice + 1, nPairChoice + 1);
+                        printf("Input new word to replace \"%s\": ", aEntries[nEntryChoice].aPairs[nPairChoice].translation);
+                        scanf("%s", sWord);
+                        // add checking if string is valid? (i.e., at least 1 char)
+                        printf("Replacing %s with %s...\n", aEntries[nEntryChoice].aPairs[nPairChoice].translation, sWord);
+                        strcpy(aEntries[nEntryChoice].aPairs[nPairChoice].translation, sWord);
                         break;
 
                     case 'X':
                     case 'x':
                         printf("\nReturning to Main Menu...\n\n");
                         break;
+                        
                     default:
                         printf("\nInvalid input. Returning to Main Menu...\n\n");
                         break;
@@ -586,6 +601,9 @@ void modifyEntry(entry aEntries[], int nCount)
             }
             else
                 printf("Invalid pair. Returning to Manage Data Menu...\n");
+
+            // Revert nEntryChoice to original input for loop checking.
+            nEntryChoice++;
             
         }
         // If invalid entry is selected
