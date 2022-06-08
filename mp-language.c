@@ -277,7 +277,7 @@ int pairExists(entry aEntries[], int nCount, str sLanguage, str sWord)
                 && strcmp(sWord, aEntries[i].aPairs[j].translation) == 0)
             {
                 printf("--------------------------------\n");
-                printf("Found pair @ entry no. %d\n\n", i + 1);
+                printf("Found pair at entry no. %d\n\n", i + 1);
                 
                 // Print this entry's information
                 for (k = 0; k < aEntries[i].nPairs; k++)
@@ -523,92 +523,107 @@ int search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplicat
 
 void modifyEntry(entry aEntries[], int nCount)
 {
-    char cModPair;
+    char cModPair, cRepeat;
     str sLanguage, sWord;
     int i, nEntryChoice = 0, nPairChoice;
 
     do
     {
-           // call displayEntries then ask for user input on which entry to pick
+        // Display entries first before asking user which entry to modify
         if (nEntryChoice == 0) 
         {
             printf("\nOpening list of entries... Please exit (X/x) the list before selecting an entry to modify\n");
             displayEntries(aEntries, nCount);
         }
 
+        // If user inputs 0, the conditional statements below are skipped
         printf("Which entry do you wish to modify? Press 0 to view the list of entries again: ");
         scanf("%d", &nEntryChoice);
 
-        // restart loop if user wants to view list of entries again, continue otherwise
-        // If valid entry is selected
+        // If user inputs a valid entry (i.e., greater than 1 but within no. of entries)
         if (nEntryChoice >= 1 && nEntryChoice <= nCount)
         {
             // Adjust nEntryChoice for array-indexing
             nEntryChoice--;
 
-            // Show all information and pairs for selected entry
-            printf("\nModifying this entry:\n");
-            printf("--------------------------------\n");
-            printf("Entry No. %d with %d pair/s\n\n", nEntryChoice + 1, aEntries[nEntryChoice].nPairs);
-            for (i = 0; i < aEntries[i].nPairs; i++)
-                printf("Pair No. %d || Language: %s | Translation: %s\n", i + 1, aEntries[nEntryChoice].aPairs[i].language, aEntries[nEntryChoice].aPairs[i].translation);
-            printf("--------------------------------\n");
-
-            // Prompt user for pair to modify
-            printf("\nWhich pair do you wish to modify: ");
-            scanf("%d", &nPairChoice);
-
-            // If user selected valid pair within selected entry
-            if (nPairChoice >= 1 &&  nPairChoice <= aEntries[nEntryChoice].nPairs)
+            // Let user modify at least one time, but allow them to modify more than once
+            do
             {
-                // Adjust nPairChoice for array-indexing
-                nPairChoice--;
+                // Show all information and pairs for selected entry
+                printf("\nModifying this entry:\n");
+                printf("--------------------------------\n");
+                printf("Entry No. %d with %d pair/s\n\n", nEntryChoice + 1, aEntries[nEntryChoice].nPairs);
+                for (i = 0; i < aEntries[nEntryChoice].nPairs; i++)
+                    printf("Pair No. %d || Language: %s | Translation: %s\n", i + 1, aEntries[nEntryChoice].aPairs[i].language, aEntries[nEntryChoice].aPairs[i].translation);
+                printf("--------------------------------\n");
 
-                printf("Modify the language or translation? ('L' - language | 'T' - translation | 'X' - Exit)\n");
-                scanf(" %c", &cModPair);
-                
-                // add feature to prompt user if they wish to modify another pair
+                // Prompt user for pair to modify (add feature to let them cancel?)
+                printf("\nWhich pair do you wish to modify: ");
+                scanf("%d", &nPairChoice);
 
-                switch (cModPair)
+                // If user selected a valid pair within selected entry
+                if (nPairChoice >= 1 &&  nPairChoice <= aEntries[nEntryChoice].nPairs)
                 {
-                    case 'L':
-                    case 'l':
-                        printf("Input new language to replace \"%s\": ", aEntries[nEntryChoice].aPairs[nPairChoice].language);
-                        scanf("%s", sLanguage);
-                        // add checking if string is valid? (i.e., at least 1 char)
-                        printf("Replacing %s with %s...\n", aEntries[nEntryChoice].aPairs[nPairChoice].language, sLanguage);
-                        strcpy(aEntries[nEntryChoice].aPairs[nPairChoice].language, sLanguage);
-                        break;
-                    
-                    case 'T':
-                    case 't':
-                        printf("Input new word to replace \"%s\": ", aEntries[nEntryChoice].aPairs[nPairChoice].translation);
-                        scanf("%s", sWord);
-                        // add checking if string is valid? (i.e., at least 1 char)
-                        printf("Replacing %s with %s...\n", aEntries[nEntryChoice].aPairs[nPairChoice].translation, sWord);
-                        strcpy(aEntries[nEntryChoice].aPairs[nPairChoice].translation, sWord);
-                        break;
+                    // Adjust nPairChoice for array-indexing
+                    nPairChoice--;
 
-                    case 'X':
-                    case 'x':
-                        printf("\nReturning to Main Menu...\n\n");
-                        break;
+                    printf("Modify the language or translation? ('L' - language | 'T' - translation | 'X' - Exit): ");
+                    scanf(" %c", &cModPair);
+                    
+                    // MAKE THIS SECTION LESS REDUNDANT
+                    switch (cModPair)
+                    {
+                        case 'L':
+                        case 'l':
+                            printf("Input new language to replace \"%s\": ", aEntries[nEntryChoice].aPairs[nPairChoice].language);
+                            scanf("%s", sLanguage);
+                            // add checking if string is valid? (i.e., at least 1 char)
+                            printf("Replacing \"%s\" with \"%s\"...\n\n", aEntries[nEntryChoice].aPairs[nPairChoice].language, sLanguage);
+                            strcpy(aEntries[nEntryChoice].aPairs[nPairChoice].language, sLanguage);
+                            // Ask user if they wish to modify more pairs within the entry
+                            do
+                            {
+                                printf("Modify another pair within entry? (Y/N): ");
+                                scanf(" %c", &cRepeat);
+                            } while (cRepeat != 'Y' && cRepeat != 'y' && cRepeat != 'N' && cRepeat != 'n');
+                            break;
                         
-                    default:
-                        printf("\nInvalid input. Returning to Main Menu...\n\n");
-                        break;
+                        case 'T':
+                        case 't':
+                            printf("Input new word to replace \"%s\": ", aEntries[nEntryChoice].aPairs[nPairChoice].translation);
+                            scanf("%s", sWord);
+                            // add checking if string is valid? (i.e., at least 1 char)
+                            printf("Replacing \"%s\" with \"%s\"...\n\n", aEntries[nEntryChoice].aPairs[nPairChoice].translation, sWord);
+                            strcpy(aEntries[nEntryChoice].aPairs[nPairChoice].translation, sWord);
+                            // Ask user if they wish to modify more pairs within the entry
+                            do
+                            {
+                                printf("Modify another pair within entry? (Y/N): ");
+                                scanf(" %c", &cRepeat);
+                            } while (cRepeat != 'Y' && cRepeat != 'y' && cRepeat != 'N' && cRepeat != 'n');
+                            break;
+
+                        case 'X':
+                        case 'x':
+                            printf("\nReturning to Main Menu...\n\n");
+                            break;
+                            
+                        default:
+                            printf("\nInvalid input. Returning to Main Menu...\n\n");
+                            break;
+                    }
                 }
-            }
-            else
-                printf("Invalid pair. Returning to Manage Data Menu...\n");
+                else
+                    printf("Invalid pair. Returning to Manage Data Menu...\n");
+    
+            } while (cRepeat == 'Y' || cRepeat == 'y');
 
             // Revert nEntryChoice to original input for loop checking.
             nEntryChoice++;
-            
         }
-        // If invalid entry is selected
-        else if ((nEntryChoice <= 1 && nEntryChoice != 0) || nEntryChoice > nCount)
-            printf("Invalid entry.  Returning to Manage Data Menu...\n");
+        // If an invalid entry is selected
+        else if (nEntryChoice < 0 || nEntryChoice > nCount)
+            printf("Invalid entry. Returning to Manage Data Menu...\n");
 
     } while (nEntryChoice == 0);
 }
