@@ -14,7 +14,7 @@
 typedef char str[LETTERS];
 
 // Struct for a single pair (could do something like typedef char str[LETTERS])
-typedef struct Pair {
+typedef struct pairTag {
     str language;
     str translation;
 } pair;
@@ -23,7 +23,7 @@ typedef struct Pair {
     aPairs - an array of pairs, max. of 10 per entry
     nPairs - no. of pairs currently in entry, 0 by default
 */
-typedef struct Entry {
+typedef struct entryTag {
     pair aPairs[PAIRS];
     int nPairs;
 } entry;
@@ -44,7 +44,9 @@ char makeNewEntry(entry*, int*, str, str);
 void addTranslation(entry*, int);
 int search(entry*, int, str, str, int*);
 void modifyEntry(entry*, int);
-void displayEntries(entry*, int);
+void sortEntry(entry*, int);
+void displayEntry(entry*, int);
+void displayAllEntries(entry*, int);
 
 int
 main()
@@ -181,7 +183,7 @@ switchMDMenu(int nMLInput, entry aEntries[], int *pCount)
             modifyEntry(aEntries, *pCount);
             break;
         case 6:
-            displayEntries(aEntries, *pCount);
+            displayAllEntries(aEntries, *pCount);
             break;
 
         // Exits MD Menu
@@ -304,7 +306,6 @@ int pairExists(entry aEntries[], int nCount, str sLanguage, str sWord)
 */  
 char makeNewEntry(entry aEntries[], int *pCount, str sLanguage, str sWord)
 {
-    // create  a sort function
     char cRepeat, newEntry;
     int nFound;
 
@@ -380,9 +381,10 @@ void addPair(entry aEntries[], int nIndex, int nPairCount, str sLanguage, str sW
 
     // If current entry reached max no. of pairs, notify user
     if (aEntries[nIndex].nPairs >= 10)
-        printf("Entry has reached the maximum no. of language-translation pairs\n");
+        printf("\nEntry has reached the maximum no. of language-translation pairs\n");
     
 }
+
 
 /*
     Adds a language-translation pair to an existing entry
@@ -431,7 +433,7 @@ void addTranslation(entry aEntries[], int nCount)
             // add pair to the entry, nIndex will locate position of entry
             // aEntries[nIndex].nPair will act as an index for the new pair's position (current no. of pairs = index to be inserted at)
             addPair(aEntries, nIndex, aEntries[nIndex].nPairs, sLanguage, sWord);
-            printf("Successfully added language-translation pair!\n");    
+            printf("\nSuccessfully added language-translation pair!\n\n");    
             
             // If haven't reached max no. of pairs
             if (aEntries[nIndex].nPairs < 10)
@@ -520,7 +522,11 @@ int search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplicat
     return -1;
 }
 
-
+/*
+    Modifies language-translation pair/s of one database entry.
+        @param aEntries - array of Entries
+        @param nCount - no. of entries in database
+*/
 void modifyEntry(entry aEntries[], int nCount)
 {
     char cModPair, cRepeat;
@@ -533,7 +539,7 @@ void modifyEntry(entry aEntries[], int nCount)
         if (nEntryChoice == 0) 
         {
             printf("\nOpening list of entries... Please exit (X/x) the list before selecting an entry to modify\n");
-            displayEntries(aEntries, nCount);
+            displayAllEntries(aEntries, nCount);
         }
 
         // If user inputs 0, the conditional statements below are skipped
@@ -551,11 +557,7 @@ void modifyEntry(entry aEntries[], int nCount)
             {
                 // Show all information and pairs for selected entry
                 printf("\nModifying this entry:\n");
-                printf("--------------------------------\n");
-                printf("Entry No. %d with %d pair/s\n\n", nEntryChoice + 1, aEntries[nEntryChoice].nPairs);
-                for (i = 0; i < aEntries[nEntryChoice].nPairs; i++)
-                    printf("Pair No. %d || Language: %s | Translation: %s\n", i + 1, aEntries[nEntryChoice].aPairs[i].language, aEntries[nEntryChoice].aPairs[i].translation);
-                printf("--------------------------------\n");
+                displayEntry(&aEntries[i], aEntries[i].nPairs);
 
                 // Prompt user for pair to modify (add feature to let them cancel?)
                 printf("\nWhich pair do you wish to modify: ");
@@ -628,8 +630,67 @@ void modifyEntry(entry aEntries[], int nCount)
     } while (nEntryChoice == 0);
 }
 
+/*
+    Passing an entry into this function will sort the pairs alphabtically by language using Bubble Sort
+        @param *Entry is a pointer to an entry data type, since we need to modify the values
+        @param nPairCount is no. of pairs within this entry
+*/
+void sortEntry(entry *Entry, int nPairCount)
+{
+    int i ,j, swapped;
+    str s1, s2;
+
+    /* 
+        Worst case, the languages are arranged backwards, so run the algorithm as many times as there are pairs in the entry.
+        Every time an iteration of the outermost for loop is done, at least 1 language will be sorted accordingly.
+    */
+    for (i = 0; i < nPairCount; i++)
+    {
+        // Variable for checking whether we found any values that needed to be swapped
+        swapped = 0;
+
+        // Go through each language until the last non-sorted language in the entry
+        for (j = 0; j < nPairCount - i - 1; j++)
+        {
+            strcpy(s1, Entry->aPairs[j].language); // Current language
+            strcpy(s2, Entry->aPairs[j+1].language); // Language to be compared to
+
+            // if current language is greater or comes after than the language beside it (e.x., "Filipino" v.s. "English"), swap their positions
+            if (strcmp(s1, s2) > 0)
+            {
+                // Swapping by changing the values within the entry
+                strcpy(Entry->aPairs[j].language, s2);
+                strcpy(Entry->aPairs[j+1].language, s1);
+                swapped = 1;
+            }
+        }
+
+        // If no values were swapped, it means entry is already sorted, so no need to keep going through the entry
+        if (swapped == 0)
+            return;
+    }
+}
+
+/* 
+    Function for displaying a SINGLE entry
+        @param *Entry - pointer to entry to be displayed
+        @param nPairCount - no. of pairs within entry
+*/
+void displayEntry(entry *Entry, int nPairCount)
+{
+    int i;
+    sortEntry(Entry, nPairCount); // Sort the entry before displaying it
+
+    // Print entry and its pairs after sorting
+    printf("--------------------------------\n");
+    printf("Entry No. %d with %d pair/s\n\n", nPairCount + 1, Entry->nPairs);
+    for (i = 0; i < nPairCount; i++)
+        printf("Pair No. %d || Language: %s | Translation: %s\n", i + 1, Entry->aPairs[i].language, Entry->aPairs[i].translation);
+    printf("--------------------------------\n");
+}
+
 // Function for displaying all entries in database
-void displayEntries(entry aEntries[], int nCount)
+void displayAllEntries(entry aEntries[], int nCount)
 {
     char ch = 'N';
     int i = 0, j = 0;
@@ -641,12 +702,8 @@ void displayEntries(entry aEntries[], int nCount)
     while (i < nCount && i >= 0 && (ch == 'N' || ch == 'n' || ch == 'P' || ch == 'p'))
     {
         // Print the entry and its pairs
-        printf("--------------------------------\n");
-        printf("Entry No. %d with %d pair/s\n\n", i + 1, aEntries[i].nPairs);
-        for (j = 0; j < aEntries[i].nPairs; j++)
-            printf("Pair No. %d || Language: %s | Translation: %s\n", j + 1, aEntries[i].aPairs[j].language, aEntries[i].aPairs[j].translation);
-        printf("--------------------------------\n");
-
+        displayEntry(&aEntries[i], aEntries[i].nPairs);
+        
         // GUI printing
         // If only one entry
         if (nCount == 1)
