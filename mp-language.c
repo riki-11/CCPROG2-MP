@@ -39,7 +39,7 @@ void switchMainMenu(int, int*, entry*, int*);
 void switchMDMenu(int, entry*, int*);
 void addEntry(entry*, int*);
 int pairExists(entry*, int, str, str);
-void addPair(entry*, int, int, char*, char*);
+void addPair(entry*, int, int, str, str);
 char makeNewEntry(entry*, int*, str, str);
 void addTranslation(entry*, int);
 int search(entry*, int, str, str, int*);
@@ -185,6 +185,7 @@ switchMDMenu(int nMLInput, entry aEntries[], int *pCount)
             break;
         case 4:
             deleteEntry(aEntries, pCount);
+            break;
         case 6:
             displayAllEntries(aEntries, *pCount);
             break;
@@ -220,7 +221,7 @@ void inputPair(str sLanguage, str sWord)
 
 /*
     Function called when inputting '1' in the MD menu to add a new entry in database
-        @param aEntries - array of Entries
+        @param aEntries - array of entryTag structs
         @param pCount - pointer to no. of entries in database
 */
 void addEntry(entry aEntries[], int *pCount)
@@ -259,7 +260,7 @@ void addEntry(entry aEntries[], int *pCount)
 
 /*
     Function for checking if pair to be added already exists in database
-        @param aEntries - array of entries in database
+        @param aEntries - array of entryTag structs in database
         @param nCount - no. of entries in database
         @param sLanguage - Language to be checked
         @param sWord - Word to be checked
@@ -300,7 +301,7 @@ int pairExists(entry aEntries[], int nCount, str sLanguage, str sWord)
 
 /*
     Function for ACTUALLY creating the entry itself (separate from addEntry)
-        @param aEntries - array of Entries
+        @param aEntries - array of entryTag structs
         @param pCount - pointer to no. of entries in database
         @param sLanguage - Language to be checked
         @param sWord - Word to be checked
@@ -367,7 +368,7 @@ char makeNewEntry(entry aEntries[], int *pCount, str sLanguage, str sWord)
 
 /*
     Function for adding a pair to an entry
-        @param aEntries - array of Entries
+        @param aEntries - array of entryTag structs
         @param nCount - no. of entries in database
         @param nPairCount - no. of pairs in the entry that is being updated
         @param sLanguage - Language to be checked
@@ -512,7 +513,7 @@ void addTranslation(entry aEntries[], int nCount)
 
 /*
     Finds entries that contain the language-translation pair being searched for
-        @param aEntries - array of Entries
+        @param aEntries - array of entryTag structs
         @param nCount - no. of entries in database
         @param sLanguage - Language to be checked
         @param sWord - Word to be checked
@@ -538,7 +539,7 @@ int search(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplicat
 
 /*
     Modifies language-translation pair/s of one database entry.
-        @param aEntries - array of Entries
+        @param aEntries - array of entryTag structs
         @param nCount - no. of entries in database
 */
 void modifyEntry(entry aEntries[], int nCount)
@@ -644,9 +645,17 @@ void modifyEntry(entry aEntries[], int nCount)
     } while (nEntryChoice == 0);
 }
 
+/*
+    Allows user to delete one entry in the database
+        @param aEntries - array of Entry structs
+        @param pCount - pointer to no. of entries in database
+*/
 void deleteEntry(entry aEntries[], int *pCount)
 {
     int i, nEntryChoice = 0;
+    entry blankEntry;
+    blankEntry.nPairs = 0;
+
     do
     {
         // Display entries first before asking user which entry to delete
@@ -663,37 +672,40 @@ void deleteEntry(entry aEntries[], int *pCount)
         // If user inputs a valid entry (i.e., greater than 1 but within no. of entries)
         if (nEntryChoice >= 1 && nEntryChoice <= *pCount)
         {
-            printf("Deleting entry no. %d\n", nEntryChoice);
+            printf("\nDeleting entry no. %d\n", nEntryChoice);
             // Adjust nEntryChoice for array-indexing
             nEntryChoice--;
 
-            // Delete entry at selected index
-            // If there are any entries that succeed the deleted entry, move them accordingly.
-
-            // We will do the deleting action by using memcpy
-            // DOESN'T ACCOUNT FOR IF LAST ENTRY IN DATABASE OR IF ONLY ONE ELEMENT
-            // RUN THIS IN A LOOP FOR EVERY ELEMENT AFTER THE elemnt to be deleted
+            // Delete an entry by copying the values of the succeeding entry into this one (using memcpy)
+            // Also Move succeeding entries one index to the left accordingly
             for (i = nEntryChoice; i < (*pCount) - 1; i++)
                 memcpy(&(aEntries[i]), &(aEntries[i + 1]), sizeof(entry));
+            
+            // Clear last entry in database of its data ('i' will be equal to index of last existing entry in database)
+            memcpy(&(aEntries[i]), &blankEntry, sizeof(entry));
 
             // update no. of entries in database
             *pCount -= 1;
 
             // Revert nEntryChoice to original input for loop checking.
             nEntryChoice++;
+
+            printf("\nSuccessfully deleted entry!\n");
         }
         else if (nEntryChoice < 0 || nEntryChoice > *pCount)
             printf("Invalid entry. Returning to Manage Data Menu...\n");
 
     } while (nEntryChoice == 0);
-    
 }
 
+void deleteTranslation()
+{
 
+}
 
 /*
     Passing an entry into this function will sort the pairs alphabtically by language using Bubble Sort
-        @param *Entry is a pointer to an entry data type, since we need to modify the values
+        @param *Entry is a pointer to an entryTag struct, since we need to modify the values
         @param nPairCount is no. of pairs within this entry
 */
 void sortEntry(entry *Entry, int nPairCount)
