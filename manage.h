@@ -1,13 +1,13 @@
 // Max no. of letters per entry
-#define LETTERS 20
+#define MAX_LETTERS 20
 
 // Max no. of pairs per entry
-#define PAIRS 10
+#define MAX_PAIRS 10
 
 // Max no. of entries
-#define ENTRIES 150
+#define MAX_ENTRIES 150
 
-typedef char str[LETTERS];
+typedef char str[MAX_LETTERS];
 
 // Struct for a single pair (could do something like typedef char str[LETTERS])
 typedef struct pairTag {
@@ -20,7 +20,7 @@ typedef struct pairTag {
     nPairs - no. of pairs currently in entry, 0 by default
 */
 typedef struct entryTag {
-    pair aPairs[PAIRS];
+    pair aPairs[MAX_PAIRS];
     int nPairs;
 } entry;
 
@@ -38,10 +38,11 @@ int pairExists(entry*, int, str, str);
 void addPair(entry*, int, int, str, str);
 char makeNewEntry(entry*, int*, str, str);
 void addTranslation(entry*, int);
-int search(entry*, int, str, str, int*);
+int searchPair(entry*, int, str, str, int*);
 void modifyEntry(entry*, int);
 void deleteEntry(entry*, int*);
 void deleteTranslation(entry*, int*);
 void sortEntry(entry*, int);
 void displayEntry(entry*, int, int);
 void displayAllEntries(entry*, int);
+void searchWord();

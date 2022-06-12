@@ -4,7 +4,7 @@ int
 main()
 {
     int nMMInput = 0, nMLInput = 0, nEntryCount = 0;
-    entry aEntries[ENTRIES];
+    entry aEntries[MAX_ENTRIES];
 
     initDatabase(aEntries); // Initializes database of entries
     
