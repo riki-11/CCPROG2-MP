@@ -1,0 +1,9 @@
+english: hi
+filipino: kamusta
+
+japanese: konichiwa
+korean: annyeong
+
+spanish: hola
+french: bonjour
+

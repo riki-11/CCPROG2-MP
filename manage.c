@@ -132,6 +132,12 @@ switchMDMenu(int nMLInput, entry aEntries[], int *pCount)
         case 8:
             searchTranslation(aEntries, *pCount);
             break;
+        case 9:
+            export(aEntries, *pCount);
+            break;
+        case 10:
+            import(aEntries, pCount);
+            break;
         // Exits MD Menu
         case 11:
             printf("Exiting to Main Menu...\n");
@@ -1007,5 +1013,88 @@ void searchTranslation(entry aEntries[], int nCount)
             } while (ch != 'N' && ch != 'n' && ch != 'P' && ch != 'p' && ch != 'X' && ch != 'x');
         }
     }
+}
+
+/*
+    Exports database of entries into a text file.
+        REMEMBER HAVE TO CLEAR THE DATABASE ONCE WE EXIT TO MAIN MENU 
+*/
+void export(entry aEntries[], int nCount)
+{
+    FILE *fp;
+    int i, j;
+    fprintf(stdout, "\nExporting...\n");
+    fp = fopen("output.txt", "w");
+
+    if (fp != NULL)
+    {
+        // Go through each entry and each pair and write them to the output file
+        for (i = 0; i < nCount; i++)
+        {
+            for (j = 0; j < aEntries[i].nPairs; j++)
+                fprintf(fp, "%s: %s\n", aEntries[i].aPairs[j].language, aEntries[i].aPairs[j].translation);
+            
+            fprintf(fp, "\n");
+        }
+    }
+
+    fclose(fp);
+}
+
+/*
+    Function for importing a text file into the current entry database
+*/
+void import(entry aEntries[], int *pCount)
+{
+    FILE *fp;
+    str sFilename;
+    char *sToken, buffer[50];
+    int nPairCount = 0;
+
+    printf("Input a text file containing entries you wish to import: ");
+    scanf("%s", sFilename);
+
+    fp = fopen(sFilename, "r");
+
+    if (fp != NULL)
+    {
+        printf("\n-----OUTPUT-----\n\n");
+
+        // while haven't reached end of file, go through each line in the text file
+        while (fgets(buffer, 50, fp) != NULL)
+        {
+            // remove trailing newline character from buffer, meaning ignore newlines when taking input
+            buffer[strcspn(buffer, "\n")] = '\0';
+
+            // CASE FOR WHEN CURRENT DATABASE IS EMPTY
+            // If fgets buffer is a null-terminating character, it means we're recording a new entry
+            if (buffer[0] == '\0')
+            {
+                printf("\nNEW ENTRY!\n");
+                *pCount += 1; // increment entry count
+                nPairCount = 0; // reset pair count for new entry
+            }
+            // Record language-translation pairs until we reach a '\0' buffer to signify a new entry
+            else
+            {
+                // strtok basically separates strings based on a delimiter string, in this case, ": "  ;
+                sToken = strtok(buffer, ": ");
+                // Assuming correct formatting, first token should be language
+                if (sToken != NULL)
+                    strcpy(aEntries[*pCount].aPairs[nPairCount].language, sToken);
+                
+                // Assuming correct formatting, second token should be language
+                sToken = strtok(NULL, ": ");
+                if (sToken != NULL)
+                    strcpy(aEntries[*pCount].aPairs[nPairCount].translation, sToken);
+                
+                aEntries[*pCount].nPairs++; // update no. of pairs in current entry
+                nPairCount++; // update no. of pairs to serve as indexing 
+            }
+        }
+    }
+    else
+        printf("Error opening file.\n");
     
+    fclose(fp);
 }

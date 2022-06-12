@@ -47,3 +47,5 @@ void displayEntry(entry*, int, int);
 void displayAllEntries(entry*, int);
 void searchWord(entry*, int);
 void searchTranslation(entry*, int);
+void export(entry*, int);
+void import(entry*, int*);
