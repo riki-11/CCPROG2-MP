@@ -129,6 +129,9 @@ switchMDMenu(int nMLInput, entry aEntries[], int *pCount)
         case 7:
             searchWord(aEntries, *pCount);
             break;
+        case 8:
+            searchTranslation(aEntries, *pCount);
+            break;
         // Exits MD Menu
         case 11:
             printf("Exiting to Main Menu...\n");
@@ -355,7 +358,7 @@ void addTranslation(entry aEntries[], int nCount)
     int aDuplicates[MAX_ENTRIES] = {}; // stores indexes of entries that contain the pair being searched
     
     // Ask user for pair to search for
-    printf("----- Input pair to search ----\n");
+    printf("\n----- Input pair to search ----\n");
     inputPair(sLanguage, sWord);
 
     printf("\n---- SEARCHING FOR PAIR ----\n");
@@ -928,4 +931,81 @@ void searchWord(entry aEntries[], int nCount)
     }
 }
 
-//search translation similar to add translation
+/*
+    Lets user find a specific language-translation pair
+*/
+void searchTranslation(entry aEntries[], int nCount)
+{
+    str sLanguage, sWord;
+    char ch = 'N';
+    int i, j, nEntryIndex, nFound = 0;
+    int aFound[MAX_ENTRIES] = {}; // stores entry no.s where pair was found
+
+    // Ask user for pair to search for
+    printf("\n----- Input pair to search ----\n");
+    inputPair(sLanguage, sWord);
+
+    printf("\n---- SEARCHING FOR PAIR ----\n");
+
+    // Linearly search through every entry and pair, since words are not sorted in any way.
+    for (i = 0; i < nCount; i++)
+        for (j = 0; j < aEntries[i].nPairs; j++)
+            // If inputted pair matches searched pair, store index of the entry containing the pair
+            if (strcmp(sLanguage, aEntries[i].aPairs[j].language) == 0
+                && strcmp(sWord, aEntries[i].aPairs[j].translation) == 0)
+            {
+                // Store entry no. in aFound
+                aFound[nFound] = i;
+                nFound++;
+            }
+
+    if (nFound == 0)
+        printf("\nPair was not found in database. Returning to Manage Data Menu...\n");
+    else
+    {
+        printf("\nFound pair in %d entries\n", nFound);
+        i = 0;
+        // Display each entry stored in aFound while there are entries to show and while user hasn't exited
+        while (i < nFound && i >= 0 && (ch == 'N' || ch == 'n' || ch == 'P' || ch == 'p'))
+        {
+            nEntryIndex = aFound[i];
+            
+            // Print the entry and its pairs
+            displayEntry(&aEntries[nEntryIndex], nEntryIndex + 1, aEntries[nEntryIndex].nPairs);
+
+            // GUI printing
+            // If only one entry was found
+            if (nFound == 1)
+                printf("              Exit              \n");
+            // If currently at first of multiple entries
+            else if (i == 0 && nFound > 1)
+                printf("              Exit          Next\n");
+            // If at last of multiple entries
+            else if (i == nFound - 1)
+                printf("Previous        Exit            \n");
+            // If not at last or first of multiple entries
+            else
+                printf("Previous        Exit        Next\n");
+
+            // Page-turning-esque feature
+            do
+            {
+                scanf(" %c", &ch);
+                if (ch == 'N' || ch == 'n')
+                    i++;
+                else if (ch == 'P' || ch == 'p')
+                    i--;
+                else if (ch == 'X' || ch == 'x')
+                {
+                    printf("Exiting...\n\n");
+                    return;
+                }
+                
+                if (ch != 'N' && ch != 'n' && ch != 'P' && ch != 'p' && ch != 'X' && ch != 'x')
+                    printf("Invalid input.\n");
+
+            } while (ch != 'N' && ch != 'n' && ch != 'P' && ch != 'p' && ch != 'X' && ch != 'x');
+        }
+    }
+    
+}

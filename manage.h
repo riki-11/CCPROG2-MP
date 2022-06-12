@@ -45,4 +45,5 @@ void deleteTranslation(entry*, int*);
 void sortEntry(entry*, int);
 void displayEntry(entry*, int, int);
 void displayAllEntries(entry*, int);
-void searchWord();
+void searchWord(entry*, int);
+void searchTranslation(entry*, int);
