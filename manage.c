@@ -186,24 +186,32 @@ void addEntry(entry aEntries[], int *pCount)
     // Check if pair already exists in database of entries
     nPairFound = pairExists(aEntries, *pCount, sLanguage, sWord);
 
-    // If pair does NOT exist yet in any entry
-    if (!nPairFound) // might have to make this nPairFound < 0
-        makeNewEntry(aEntries, pCount, sLanguage, sWord);
-
-    // If pair DOES exist, ask if this is new entry
-    else
+    // Check first if max capacity of entries has been reached.
+    if (*pCount < MAX_ENTRIES)
     {
-        printf("Pair already exists, is this a new entry? (Y/N) ");
-        scanf(" %c", &newEntry);
-
-        if (newEntry == 'Y' || newEntry == 'y')
+        // If pair does NOT exist yet in any entry
+        if (!nPairFound) // might have to make this nPairFound < 0
             makeNewEntry(aEntries, pCount, sLanguage, sWord);
+
+        // If pair DOES exist, ask if this is new entry
         else
         {
-            printf("Returning to menu...\n\n");
-            return;
+            printf("Pair already exists, is this a new entry? (Y/N) ");
+            scanf(" %c", &newEntry);
+
+            if (newEntry == 'Y' || newEntry == 'y')
+                makeNewEntry(aEntries, pCount, sLanguage, sWord);
+            else
+            {
+                printf("Returning to menu...\n\n");
+                return;
+            }
         }
     }
+    else
+    printf("\nDatabase has reached full capacity of 150 entries. "
+           "Delete entries using Delete Entry to continue adding entries."
+           "\nReturning to Manage Data Menu...\n");
 }
 
 /*
@@ -1024,9 +1032,8 @@ void export(entry aEntries[], int nCount)
     FILE *fp;
     int i, j;
     fprintf(stdout, "\nExporting...\n");
-    fp = fopen("output.txt", "w");
 
-    if (fp != NULL)
+    if ((fp = fopen("output.txt", "w"))!= NULL)
     {
         // Go through each entry and each pair and write them to the output file
         for (i = 0; i < nCount; i++)
@@ -1036,9 +1043,11 @@ void export(entry aEntries[], int nCount)
             
             fprintf(fp, "\n");
         }
-    }
 
-    fclose(fp);
+        fclose(fp);
+    }
+    else
+        printf("Error writing to file.\n");
 }
 
 /*
@@ -1048,53 +1057,154 @@ void import(entry aEntries[], int *pCount)
 {
     FILE *fp;
     str sFilename;
+    entry newEntry, blankEntry;
+    int nPairCount = 0, nNew = 0;
+    char cLoad;
     char *sToken, buffer[50];
-    int nPairCount = 0;
-
+    
     printf("Input a text file containing entries you wish to import: ");
     scanf("%s", sFilename);
 
-    fp = fopen(sFilename, "r");
-
-    if (fp != NULL)
+    if ((fp = fopen(sFilename, "r")) != NULL)
     {
-        printf("\n-----OUTPUT-----\n\n");
-
-        // while haven't reached end of file, go through each line in the text file
-        while (fgets(buffer, 50, fp) != NULL)
+        // CASE FOR WHEN CURRENT DATABASE IS EMPTY (redundant w other case for now)
+        if (*pCount == 0)
         {
-            // remove trailing newline character from buffer, meaning ignore newlines when taking input
-            buffer[strcspn(buffer, "\n")] = '\0';
+            // while haven't reached end of file, go through each line in the text file
+            while (fgets(buffer, 50, fp) != NULL)
+            {
+                // Only process input while max no. of entries hasn't been reached
+                if (*pCount < MAX_ENTRIES)
+                {
+                    // Set trailing newline to null-terminating char to ignore newlines when taking input
+                    buffer[strcspn(buffer, "\n")] = '\0';
 
-            // CASE FOR WHEN CURRENT DATABASE IS EMPTY
-            // If fgets buffer is a null-terminating character, it means we're recording a new entry
-            if (buffer[0] == '\0')
-            {
-                printf("\nNEW ENTRY!\n");
-                *pCount += 1; // increment entry count
-                nPairCount = 0; // reset pair count for new entry
+                    // If fgets buffer is a null-terminating character, a new entry was just recorded
+                    if (buffer[0] == '\0')
+                    {
+                        *pCount += 1; // increment entry count
+                        nPairCount = 0; // reset pair count for new entry
+                        // Keep track of how many NEW entries have been added
+                        nNew++;
+                    }
+                    // Record language-translation pairs until we reach a '\0' buffer to signify a new entry
+                    else
+                    {
+                        // strtok basically separates strings based on a delimiter string, in this case, ": "  ;
+                        sToken = strtok(buffer, ": ");
+                        // Assuming correct formatting, first token should be language
+                        if (sToken != NULL)
+                            strcpy(aEntries[*pCount].aPairs[nPairCount].language, sToken);
+                        
+                        // Assuming correct formatting, second token should be language
+                        sToken = strtok(NULL, ": ");
+                        if (sToken != NULL)
+                            strcpy(aEntries[*pCount].aPairs[nPairCount].translation, sToken);
+                        
+                        aEntries[*pCount].nPairs++; // update no. of pairs in current entry
+                        nPairCount++; // update no. of pairs to serve as indexing (ERROR CHECKING IF INPUT IS WRONG?)
+                    }
+                }
+                else
+                {
+                    printf("\nSuccessfully imported %d new entry/entries coming from \"%s\".\n", nNew, sFilename);
+                    printf("\nDatabase has reached full capacity of 150 entries. "
+                           "Delete entries using Delete Entry to continue adding entries."
+                           "\nReturning to Manage Data Menu...\n");
+                    return;
+                }
             }
-            // Record language-translation pairs until we reach a '\0' buffer to signify a new entry
-            else
-            {
-                // strtok basically separates strings based on a delimiter string, in this case, ": "  ;
-                sToken = strtok(buffer, ": ");
-                // Assuming correct formatting, first token should be language
-                if (sToken != NULL)
-                    strcpy(aEntries[*pCount].aPairs[nPairCount].language, sToken);
-                
-                // Assuming correct formatting, second token should be language
-                sToken = strtok(NULL, ": ");
-                if (sToken != NULL)
-                    strcpy(aEntries[*pCount].aPairs[nPairCount].translation, sToken);
-                
-                aEntries[*pCount].nPairs++; // update no. of pairs in current entry
-                nPairCount++; // update no. of pairs to serve as indexing 
-            }
+
+            printf("\nSuccessfully imported %d new entry/entries coming from \"%s\".\n", nNew, sFilename);
         }
+        
+        // If database currently contains at least 1 but less than maximum entry/entries
+        else if (*pCount >= 1 && *pCount < MAX_ENTRIES)
+        {
+            // Initialize no. of pairs within the "entry" type structs
+            newEntry.nPairs = 0;
+            blankEntry.nPairs = 0;
+
+            // Showcase each entry from the loaded text file one at a time
+            while (fgets(buffer, 50, fp) != NULL)
+            {
+                // Set trailing newline to null-terminating char to ignore newlines when taking input
+                buffer[strcspn(buffer, "\n")] = '\0';
+
+                // A new entry is signified by a blank line in the file
+                if (buffer[0] == '\0' && *pCount < MAX_ENTRIES)
+                {
+                    // Display the entry that's been found
+                    displayEntry(&newEntry, 0, nPairCount);
+
+                    do
+                    {
+                        printf("\nLoad this entry into the database?: ");
+                        scanf(" %c", &cLoad);
+                        if (cLoad != 'Y' && cLoad != 'y' && cLoad != 'N' && cLoad != 'n')
+                            printf("Invalid input. Please try again.\n");
+                    } while (cLoad != 'Y' && cLoad != 'y' && cLoad != 'N' && cLoad != 'n');
+                    
+                    // Load entry into corresponding position within database via memcpy
+                    if (cLoad == 'Y' || cLoad == 'y')
+                    {
+                        printf("\nLoading entry into database...\n");
+
+                        // Copy the input file's entry into a new entry within the database
+                        memcpy(&aEntries[*pCount], &newEntry, sizeof(entry));
+
+                        // update no. of entries in database
+                        *pCount += 1;
+
+                        // Keep track of how many NEW entries have been added
+                        nNew++;
+                    }
+                    else
+                        printf("\nMoving on to next entry...\n");
+
+                    // erase records of old entry by using memcpy and a "blank" entry
+                    memcpy(&newEntry, &blankEntry, sizeof(entry));
+
+                    // reset pair count since a new entry will be loaded
+                    nPairCount = 0;
+                }
+                // if no. of entries within database exceeds maximum, stop loading new entries
+                else if (*pCount >= MAX_ENTRIES)
+                {
+                    printf("\nDatabase has reached full capacity of 150 entries. "
+                           "Delete entries using Delete Entry to continue adding entries."
+                           "\nReturning to Manage Data Menu...\n");
+                    return;
+                }
+
+                // Record language-translation pairs until we reach a '\0' buffer to signify a new entry
+                else
+                {
+                    sToken = strtok(buffer, ": ");
+                    if (sToken != NULL)
+                        strcpy(newEntry.aPairs[nPairCount].language, sToken);
+                    
+                    // Assuming correct formatting, second token should be language
+                    sToken = strtok(NULL, ": ");
+                    if (sToken != NULL)
+                        strcpy(newEntry.aPairs[nPairCount].translation, sToken);
+
+                    // Update pair count of current entry
+                    newEntry.nPairs++;
+                    nPairCount++;
+                }
+            }
+
+            printf("\nSuccessfully imported %d new entry/entries coming from \"%s\".\n", nNew, sFilename);
+        }
+        else
+            printf("\nDatabase has reached full capacity of 150 entries. "
+            "Delete entries using Delete Entry to continue adding entries."
+            "\nReturning to Manage Data Menu...\n");
+
+        fclose(fp);
     }
     else
-        printf("Error opening file.\n");
-    
-    fclose(fp);
+        printf("Error reading file.\n");
+
 }
