@@ -1,3 +1,5 @@
+#include "manage.c"
+
 // Max no. of languages
 #define LANGUAGES 7100
 
