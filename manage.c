@@ -67,13 +67,15 @@ getMDInput(int* nMLInput)
 void
 getLTInput(int* nMLInput)
 {
+    char cDump;
+    
     printf("Choose tool option: ");
-    scanf("%d", nMLInput);
+    scanf("%d%c", nMLInput, &cDump);
 }
 
 // Function for moving around main menu
 void
-switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount)
+switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount, int *nInputElem, int *nLineElem, int *nFileWords)
 {
     switch(nMMInput)
     {
@@ -89,8 +91,14 @@ switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount)
             break;
 
         case 2:
-            displayLTMenu();
-            getLTInput(nMLInput);
+            // keep looping through this until user enters the int 3 to exit LT Menu
+            do
+            {
+                displayLTMenu();
+                getLTInput(nMLInput);
+                if (*nMLInput != 3)
+                    switchLTMenu(*nMLInput, nInputElem, nLineElem, nFileWords);
+            } while (*nMLInput != 3);
             break;
         
         case 3:
