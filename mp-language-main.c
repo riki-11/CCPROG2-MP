@@ -1,4 +1,4 @@
-#include "manage.c"
+#include "tools.c"
 
 int
 main()
