@@ -1,5 +1,5 @@
 // Max no. of letters per entry
-#define MAX_LETTERS 20
+#define MAX_LETTERS 21
 
 // Max no. of pairs per entry
 #define MAX_PAIRS 10
@@ -31,7 +31,7 @@ void displayLTMenu();
 void getMMInput(int*);
 void getMDInput(int*);
 void getLTInput(int*);
-void switchMainMenu(int, int*, entry*, int*);
+void switchMainMenu(int, int*, entry*, int*, int*, int*, int*);
 void switchMDMenu(int, entry*, int*);
 void addEntry(entry*, int*);
 int pairExists(entry*, int, str, str);
