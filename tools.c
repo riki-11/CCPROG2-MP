@@ -71,13 +71,13 @@ splitSentence(char strSentence[], str strWords[], int *nElem)
 void
 identifyML(int *nInputElem, int *nLineElem, int *nFileWords)
 {
-    str             strInputWords[ENTRIES],
-                    strFileWords[ENTRIES];
+    str             strInputWords[MAX_ENTRIES],
+                    strFileWords[MAX_ENTRIES];
     languageType    aLanguages[LANGUAGES];
-    matchingType    aMatches[ENTRIES];
-    char            strFilename[ENTRIES],
-                    strInputSentence[ENTRIES+1],
-                    strFileSentence[ENTRIES+1];
+    matchingType    aMatches[MAX_ENTRIES];
+    char            strFilename[MAX_ENTRIES],
+                    strInputSentence[MAX_ENTRIES+1],
+                    strFileSentence[MAX_ENTRIES+1];
     int             i, j, k, 
                     nMatches, 
                     nLanguages, 
@@ -114,7 +114,7 @@ identifyML(int *nInputElem, int *nLineElem, int *nFileWords)
 
     for (i = 0; i < *nInputElem; i++)
     {
-        memset(aMatches, 0, sizeof(char)*ENTRIES);
+        memset(aMatches, 0, sizeof(char)*MAX_ENTRIES);
         //printf("Step 3\n");
         for (j = 0; j < *nFileWords; j++)
         {
@@ -197,10 +197,10 @@ EmptyMatchingMember(matchingType aMatches[], int nMatches)
 }
 
 void
-FileReader(str strFilename, str strFileWords[ENTRIES], char strFileSentence[151], int *nLineElem, int *nFileWords)
+FileReader(str strFilename, str strFileWords[MAX_ENTRIES], char strFileSentence[151], int *nLineElem, int *nFileWords)
 {
     FILE *pText;
-    str  strLineWords[LETTERS];
+    str  strLineWords[MAX_LETTERS];
     int i, j = 0;
 
     if ((pText = fopen(strFilename, "r")) != NULL)
