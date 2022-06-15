@@ -4,6 +4,7 @@
 
 #include "manage-tools.h"
 
+// Displays Main Menu
 void
 displayMainMenu()
 {
@@ -14,6 +15,7 @@ displayMainMenu()
     printf("\n\n");
 }
 
+// Displays Manage Data Menu
 void
 displayMDMenu()
 {
@@ -32,6 +34,7 @@ displayMDMenu()
     printf("\n\n");
 }
 
+// Displays Language Data Menu
 void
 displayLTMenu()
 {
@@ -42,32 +45,49 @@ displayLTMenu()
     printf("\n\n");
 }
 
+/*  Gets Main Menu input
+    @param pMMInput
+*/
 void
-getMMInput(int* nMMInput)
+getMMInput(int* pMMInput)
 {
     printf("Choose menu option: ");
-    scanf("%d", nMMInput);
+    scanf("%d", pMMInput);
 }
 
+/*  Gets Manage Data Menu input
+    @param 
+*/
 void
-getMDInput(int* nMLInput)
+getMDInput(int* pMLInput)
 {
     printf("Choose manage option: ");
-    scanf("%d", nMLInput);
+    scanf("%d", pMLInput);
 }
 
+/*  Gets Language Tools Menu input
+    @param 
+*/
 void
-getLTInput(int* nMLInput)
+getLTInput(int* pMLInput)
 {
     char cDump;
     
     printf("Choose tool option: ");
-    scanf("%d%c", nMLInput, &cDump);
+    scanf("%d%c", pMLInput, &cDump);
 }
 
-// Function for moving around main menu
+/*  Lets user move around the main menu
+    @param nMMInput
+    @param nMLInput
+    @param aEntries
+    @param pCount
+    @param pInputElem
+    @param pLineElem
+    @param pFileWords
+*/
 void
-switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount, int *nInputElem, int *nLineElem, int *nFileWords)
+switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount, int *pInputElem, int *pLineElem, int *pFileWords)
 {
     switch(nMMInput)
     {
@@ -88,7 +108,7 @@ switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount, int *
                 displayLTMenu();
                 getLTInput(nMLInput);
                 if (*nMLInput != 3)
-                    switchLTMenu(*nMLInput, nInputElem, nLineElem, nFileWords);
+                    switchLTMenu(*nMLInput, pInputElem, pLineElem, pFileWords);
             } while (*nMLInput != 3);
             break;
         
@@ -101,7 +121,11 @@ switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount, int *
     }
 }
 
-// Function for moving around MD menu
+/*  Function for moving around Manage Data menu
+    @param nMLInput
+    @param aEntries
+    @param pCount
+*/
 void
 switchMDMenu(int nMLInput, entry aEntries[], int *pCount)
 {
@@ -146,7 +170,37 @@ switchMDMenu(int nMLInput, entry aEntries[], int *pCount)
     }
 }
 
-// Function for setting the no. of pairs for all entries to 0
+/*  Function for moving around Language Tools menu
+    @param nMLInput
+    @param pInputElem
+    @param pLineElem
+    @param pFileWords
+*/
+void
+switchLTMenu(int nMLInput, int *pInputElem, int *pLineElem, int *pFileWords)
+{
+    switch(nMLInput)
+    {
+        case 1:
+            identifyML(pInputElem, pLineElem, pFileWords);
+            break;
+        case 2:
+
+            break;
+
+        // Exits LT Menu
+        case 3:
+            printf("Exiting to Main Menu...\n");
+            return;
+
+        default:
+            printf("Invalid input\n");
+    }
+}
+
+/*  Sets the no. of pairs of all entries to 0 at beginning of program
+    @param aEntries
+*/
 void initDatabase(entry aEntries[])
 {
     int i;
@@ -154,7 +208,10 @@ void initDatabase(entry aEntries[])
         aEntries[i].nPairs = 0;
 }
 
-// Function for clearing all entries within database
+/*  Clears all entries within database after exiting to Main Menu
+    @param aEntries
+    @param pCount
+*/
 void clearDatabase(entry aEntries[], int *pCount)
 {
     int i;
@@ -171,8 +228,9 @@ void clearDatabase(entry aEntries[], int *pCount)
     *pCount = 0;
 }
 
-/*
-    Function for asking user for language-translation pair
+/*  Function for asking user for language-translation pair
+    @param sLanguage
+    @param sWord
 */
 void inputPair(str sLanguage, str sWord)
 {
@@ -190,10 +248,10 @@ void inputPair(str sLanguage, str sWord)
     } while (strcmp(sLanguage, "") == 0 || strcmp(sWord, "") == 0);
 }
 
-/*
-    Function called when inputting '1' in the MD menu to add a new entry in database
-        @param aEntries - array of entryTag structs
-        @param pCount - pointer to no. of entries in database
+
+/*  Function called when inputting '1' in the MD menu to add a new entry in database
+    @param aEntries - array of entryTag structs
+    @param pCount - pointer to no. of entries in database
 */
 void addEntry(entry aEntries[], int *pCount)
 {
@@ -239,10 +297,10 @@ void addEntry(entry aEntries[], int *pCount)
 
 /*
     Function for checking if pair to be added already exists in database
-        @param aEntries - array of entryTag structs in database
-        @param nCount - no. of entries in database
-        @param sLanguage - Language to be checked
-        @param sWord - Word to be checked
+    @param aEntries - array of entryTag structs in database
+    @param nCount - no. of entries in database
+    @param sLanguage - Language to be checked
+    @param sWord - Word to be checked
     returns no. of entries where specific pair is found
 */
 int pairExists(entry aEntries[], int nCount, str sLanguage, str sWord)
@@ -277,15 +335,12 @@ int pairExists(entry aEntries[], int nCount, str sLanguage, str sWord)
     return nFound;
 }
 
-
-/*
-    Function for ACTUALLY creating the entry itself (separate from addEntry)
-        @param aEntries - array of entryTag structs
-        @param pCount - pointer to no. of entries in database
-        @param sLanguage - Language to be checked
-        @param sWord - Word to be checked
-
-    it will return cRepeat and it might be confusing as to why (i'll try to add an explanation at some point)
+/*  Function for actually creating the new entry (separate from addEntry)
+    @param aEntries - array of entryTag structs
+    @param pCount - pointer to no. of entries in database
+    @param sLanguage - Language to be checked
+    @param sWord - Word to be checked
+    returns a char to act as a base case to indicate when to stop making new entries
 */  
 char makeNewEntry(entry aEntries[], int *pCount, str sLanguage, str sWord)
 {
@@ -326,9 +381,10 @@ char makeNewEntry(entry aEntries[], int *pCount, str sLanguage, str sWord)
                 printf("Pair already exists, is this a new entry? (Y/N) ");
                 scanf(" %c", &newEntry);
 
-                // Just call the function itself again
-                // cRepeat takes the value of makeNewEntry to indicate when to stop making new entries
-                // this acts as a sort of base case since makeNewEntry implements recursion
+                /*  Just call the function itself again (concept of recursion)
+                    cRepeat takes the value of makeNewEntry, so that it knows when to stop making new entries.
+                    makeNewEntry will eventually return 'N' or 'n' to all the recursive function calls.
+                */
                 if (newEntry == 'Y' || newEntry == 'y')
                     cRepeat = makeNewEntry(aEntries, pCount, sLanguage, sWord);
                 else
@@ -345,13 +401,13 @@ char makeNewEntry(entry aEntries[], int *pCount, str sLanguage, str sWord)
     return cRepeat;
 }
 
-/*
-    Function for adding a pair to an entry
-        @param aEntries - array of entryTag structs
-        @param nCount - no. of entries in database
-        @param nPairCount - no. of pairs in the entry that is being updated
-        @param sLanguage - Language to be checked
-        @param sWord - Word to be checked
+
+/*  Function for adding a pair to an entry
+    @param aEntries - array of entryTag structs
+    @param nCount - no. of entries in database
+    @param nPairCount - no. of pairs in the entry that is being updated
+    @param sLanguage - Language to be checked
+    @param sWord - Word to be checked
     returns 1 if successfully added a pair and 0 if otherwise
 */
 void addPair(entry aEntries[], int nIndex, int nPairCount, str sLanguage, str sWord)
@@ -384,8 +440,9 @@ void addPair(entry aEntries[], int nIndex, int nPairCount, str sLanguage, str sW
 }
 
 
-/*
-    Adds a language-translation pair to an existing entry
+/*  Adds a language-translation pair to an existing entry
+    @param aEntries
+    @param nCount
 */
 void addTranslation(entry aEntries[], int nCount)
 {
@@ -491,13 +548,13 @@ void addTranslation(entry aEntries[], int nCount)
     }
 }
 
-/*
-    Finds entries that contain the language-translation pair being searched for
-        @param aEntries - array of entryTag structs
-        @param nCount - no. of entries in database
-        @param sLanguage - Language to be checked
-        @param sWord - Word to be checked
-        @param aDuplicates - array that keeps track of entries that contain the pair
+
+/*  Finds entries that contain the language-translation pair being searched for
+    @param aEntries - array of entryTag structs
+    @param nCount - no. of entries in database
+    @param sLanguage - Language to be checked
+    @param sWord - Word to be checked
+    @param aDuplicates - array that keeps track of entries that contain the pair
     returns index of entry where language-translation pair was found, -1 if otherwise
 */
 int searchPair(entry aEntries[], int nCount, str sLanguage, str sWord, int aDuplicates[])
@@ -518,10 +575,10 @@ int searchPair(entry aEntries[], int nCount, str sLanguage, str sWord, int aDupl
     return -1;
 }
 
-/*
-    Modifies language-translation pair/s of one database entry.
-        @param aEntries - array of entryTag structs
-        @param nCount - no. of entries in database
+
+/*  Modifies language-translation pair/s of one database entry.
+    @param aEntries - array of entryTag structs
+    @param nCount - no. of entries in database
 */
 void modifyEntry(entry aEntries[], int nCount)
 {
@@ -626,10 +683,9 @@ void modifyEntry(entry aEntries[], int nCount)
     } while (nEntryChoice == 0);
 }
 
-/*
-    Allows user to delete one entry in the database
-        @param aEntries - array of Entry structs
-        @param pCount - pointer to no. of entries in database
+/*  Allows user to delete one entry in the database
+    @param aEntries - array of Entry structs
+    @param pCount - pointer to no. of entries in database
 */
 void deleteEntry(entry aEntries[], int *pCount)
 {
@@ -679,8 +735,10 @@ void deleteEntry(entry aEntries[], int *pCount)
     } while (nEntryChoice == 0);
 }
 
-/*
-    Lets user delete one or more language-translation pairs within entry.
+
+/*  Lets user delete one or more language-translation pairs within entry.
+    @param aEntries
+    @param pCount
 */
 void deleteTranslation(entry aEntries[], int *pCount)
 {
@@ -778,10 +836,10 @@ void deleteTranslation(entry aEntries[], int *pCount)
     } while (nEntryChoice == 0);
 }
 
-/*
-    Passing an entry into this function will sort the pairs alphabtically by language using Bubble Sort
-        @param *Entry is a pointer to an entryTag struct, since we need to modify the values
-        @param nPairCount is no. of pairs within this entry
+
+/*  Passing an entry into this function will sort the pairs alphabtically by language using Bubble Sort
+    @param *Entry is a pointer to an entryTag struct, since we need to modify the values
+    @param nPairCount is no. of pairs within this entry
 */
 void sortEntry(entry *Entry, int nPairCount)
 {
@@ -825,11 +883,11 @@ void sortEntry(entry *Entry, int nPairCount)
     }
 }
 
-/* 
-    Function for displaying a SINGLE entry
-        @param *Entry - pointer to entry to be displayed
-        @param nEntryNum - number of entry being displayed
-        @param nPairCount - no. of pairs within entry
+ 
+/*  Function for displaying a SINGLE entry
+    @param *Entry - pointer to entry to be displayed
+    @param nEntryNum - number of entry being displayed
+    @param nPairCount - no. of pairs within entry
 */
 void displayEntry(entry *Entry, int nEntryNum, int nPairCount)
 {
@@ -844,7 +902,10 @@ void displayEntry(entry *Entry, int nEntryNum, int nPairCount)
     printf("--------------------------------\n");
 }
 
-// Function for displaying all entries in database
+/*  Function for displaying all entries in database
+    @param aEntries
+    @param nCount
+*/
 void displayAllEntries(entry aEntries[], int nCount)
 {
     char ch = 'N';
@@ -894,8 +955,10 @@ void displayAllEntries(entry aEntries[], int nCount)
     }
 }
 
-/*
-    Function for searching for specific word in database
+
+/*  Function for searching for specific word in database
+    @param aEntries
+    @param nCount
 */
 void searchWord(entry aEntries[], int nCount)
 {
@@ -968,8 +1031,9 @@ void searchWord(entry aEntries[], int nCount)
     }
 }
 
-/*
-    Lets user find a specific language-translation pair
+/*  Lets user find a specific language-translation pair
+    @param 
+    @param 
 */
 void searchTranslation(entry aEntries[], int nCount)
 {
@@ -1046,9 +1110,9 @@ void searchTranslation(entry aEntries[], int nCount)
     }
 }
 
-/*
-    Exports database of entries into a text file.
-        REMEMBER HAVE TO CLEAR THE DATABASE ONCE WE EXIT TO MAIN MENU 
+/*  Exports database of entries into a text file.
+    @param aEntries
+    @param nCount
 */
 void export(entry aEntries[], int nCount)
 {
@@ -1078,8 +1142,9 @@ void export(entry aEntries[], int nCount)
         printf("Error writing to file.\n");
 }
 
-/*
-    Function for importing a text file into the current entry database
+/*  Function for importing a text file into the current entry database
+    @param aEntries
+    @param pCount
 */
 void import(entry aEntries[], int *pCount)
 {
@@ -1240,32 +1305,14 @@ void import(entry aEntries[], int *pCount)
         printf("Error reading file.\n");
 }
 
-
-// Function for moving around LT menu
-void
-switchLTMenu(int nMLInput, int *nInputElem, int *nLineElem, int *nFileWords)
-{
-    switch(nMLInput)
-    {
-        case 1:
-            identifyML(nInputElem, nLineElem, nFileWords);
-            break;
-        case 2:
-
-            break;
-
-        // Exits LT Menu
-        case 3:
-            printf("Exiting to Main Menu...\n");
-            return;
-
-        default:
-            printf("Invalid input\n");
-    }
-}
+/*  
+    @param strSentence
+    @param strWords
+    @param pElem
+*/
 
 void
-splitSentence(char strSentence[], str strWords[], int *nElem)
+splitSentence(char strSentence[], str strWords[], int *pElem)
 {
     int i, j = 0, nPunc = 0;
 
@@ -1278,15 +1325,15 @@ splitSentence(char strSentence[], str strWords[], int *nElem)
             // if there has been a punctuation
             if (nPunc > 0)
             {
-                strWords[*nElem][j] = '\0';
+                strWords[*pElem][j] = '\0';
                 j = 0;
                 i--;
-                (*nElem)++;
+                (*pElem)++;
                 nPunc = 0;
             }
             else
             {
-                strWords[*nElem][j] = strSentence[i];
+                strWords[*pElem][j] = strSentence[i];
                 j++;
             }
         }
@@ -1296,9 +1343,9 @@ splitSentence(char strSentence[], str strWords[], int *nElem)
             // if there is no \0 or a space after the current space or \0, replace (i.e. '  ')
             if (strSentence[i+1] != ' ' || strSentence[i+1] != '\0')
             {
-                strWords[*nElem][j] = '\0';
+                strWords[*pElem][j] = '\0';
                 j = 0;
-                (*nElem)++;
+                (*pElem)++;
                 nPunc = 0;  
             }
         }
@@ -1308,9 +1355,13 @@ splitSentence(char strSentence[], str strWords[], int *nElem)
 }
 
 
-// Function for identifying the main language
+/*  Identifies main language within text
+    @param pInputElem
+    @param pLineElem
+    @param pFileWords
+*/
 void
-identifyML(int *nInputElem, int *nLineElem, int *nFileWords)
+identifyML(int *pInputElem, int *pLineElem, int *pFileWords)
 {
     str             strInputWords[MAX_ENTRIES],
                     strFileWords[MAX_ENTRIES];
@@ -1326,8 +1377,8 @@ identifyML(int *nInputElem, int *nLineElem, int *nFileWords)
                     index = 0,
                     max = 0;
 
-    *nInputElem = 0;
-    *nLineElem = 0;
+    *pInputElem = 0;
+    *pLineElem = 0;
     nMatches = nLanguages = 1;
     memset(aLanguages, 0, sizeof(char)*LANGUAGES);
 
@@ -1346,24 +1397,24 @@ identifyML(int *nInputElem, int *nLineElem, int *nFileWords)
     } while (strcmp(&strInputSentence[0], "\0") == 0);
 
     // split user's sentence input into separate words
-    splitSentence(strInputSentence, strInputWords, nInputElem);
+    splitSentence(strInputSentence, strInputWords, pInputElem);
 
     printf("Enter filename: \n");
     scanf(" %s", strFilename);
 
-    FileReader(strFilename, strFileWords, strFileSentence, nLineElem, nFileWords);
+    FileReader(strFilename, strFileWords, strFileSentence, pLineElem, pFileWords);
 
-    for (i = 0; i < *nInputElem; i++)
+    for (i = 0; i < *pInputElem; i++)
     {
         memset(aMatches, 0, sizeof(char)*MAX_ENTRIES);
         //printf("Step 3\n");
-        for (j = 0; j < *nFileWords; j++)
+        for (j = 0; j < *pFileWords; j++)
         {
            // printf("Step 4\n");
             if (strcmp(strInputWords[i], strFileWords[j]) == 0)
             {
                 //printf("Step 5\n");
-                if (MatchingPairs(strFileWords, aMatches, nFileWords, j) == 2)
+                if (MatchingPairs(strFileWords, aMatches, pFileWords, j) == 2)
                 {
                     //printf("Step 6\n");
                     nDuplicate = 0;
@@ -1412,6 +1463,10 @@ identifyML(int *nInputElem, int *nLineElem, int *nFileWords)
     }
 }
 
+/*
+    @param aLanguages
+    @param nLanguages
+*/
 int
 EmptyLanguageMember(languageType aLanguages[], int nLanguages)
 {
@@ -1423,6 +1478,10 @@ EmptyLanguageMember(languageType aLanguages[], int nLanguages)
     return 0;
 }
 
+/*
+    @param aMatches
+    @param nMatches
+*/
 int
 EmptyMatchingMember(matchingType aMatches[], int nMatches)
 {
@@ -1437,8 +1496,15 @@ EmptyMatchingMember(matchingType aMatches[], int nMatches)
     return 0;
 }
 
+/*
+    @param strFilename
+    @param strFileWords
+    @param strFileSentence
+    @param pLineElem
+    @param pFileWords
+*/
 void
-FileReader(str strFilename, str strFileWords[MAX_ENTRIES], char strFileSentence[151], int *nLineElem, int *nFileWords)
+FileReader(str strFilename, str strFileWords[MAX_ENTRIES], char strFileSentence[151], int *pLineElem, int *pFileWords)
 {
     FILE *pText;
     str  strLineWords[MAX_LETTERS];
@@ -1455,9 +1521,9 @@ FileReader(str strFilename, str strFileWords[MAX_ENTRIES], char strFileSentence[
             if (strcmp(&strFileSentence[0], "") != 0)
             {
                 // split file's current line into separate words
-                splitSentence(strFileSentence, strLineWords, nLineElem);
-                (*nFileWords) += (*nLineElem);
-                (*nLineElem) = 0;
+                splitSentence(strFileSentence, strLineWords, pLineElem);
+                (*pFileWords) += (*pLineElem);
+                (*pLineElem) = 0;
             }
 
             for (i = 0; i < 2; i++)
@@ -1474,12 +1540,18 @@ FileReader(str strFilename, str strFileWords[MAX_ENTRIES], char strFileSentence[
     else printf("Cannot open file for writing.\n");
 }
 
+/*
+    @param strFileWords
+    @param aMatches
+    @param pFileWords
+    @param j
+*/
 int
-MatchingPairs(str strFileWords[], matchingType aMatches[], int *nFileWords, int j)
+MatchingPairs(str strFileWords[], matchingType aMatches[], int *pFileWords, int j)
 {
     int i, nMatchCount = 0;
 
-    for (i = 0; i < *nFileWords; i++)
+    for (i = 0; i < *pFileWords; i++)
     {
         if (strcmp(strFileWords[j], aMatches[i].word) == 0 &&
             strcmp(strFileWords[j-1], aMatches[i].language) == 0)
