@@ -183,7 +183,7 @@ switchLTMenu(int nMLInput,
              int *pLineElem, 
              int *pFileWords)
 {
-    char strFilename[MAX_ENTRIES],
+    char strFilename[31],
          cDump;
 
     printf("Enter filename: ");
@@ -1384,7 +1384,6 @@ import(entry aEntries[],
 
    @return the words of the sentence, split up into different elements
 */
-
 void
 splitSentence(char strSentence[], str strWords[], int *nElem)
 {
@@ -1441,7 +1440,6 @@ splitSentence(char strSentence[], str strWords[], int *nElem)
 
    @return the words of the sentence, split up into different elements
 */
-
 void
 splitSentenceSpecs(char strSentence[], str strWords[], int *nElem)
 {
@@ -1503,7 +1501,6 @@ splitSentenceSpecs(char strSentence[], str strWords[], int *nElem)
 
    @return the words of the sentence, split up into different elements
 */
-
 void
 fileReader(str strFilename, str strFileWords[MAX_ENTRIES], char strFileSentence[151], int *nLineElem, int *nFileWords)
 {
@@ -1556,9 +1553,8 @@ fileReader(str strFilename, str strFileWords[MAX_ENTRIES], char strFileSentence[
    @param nFileWords - number of elements in the source file
    @param j - index of current FileWord to be checked
 
-   @return 1 if there is a match, return 0 if none
+   @return 1 if there is a match, return 2 if none
 */
-
 int
 matchingPairs(str strFileWords[], matchingType aMatches[], int *nFileWords, int j)
 {
@@ -1587,7 +1583,6 @@ matchingPairs(str strFileWords[], matchingType aMatches[], int *nFileWords, int 
 
    @return index of empty element, otherwise return -1
 */
-
 int
 emptyMatchingMember(matchingType aMatches[], int nMatches)
 {
@@ -1612,7 +1607,6 @@ emptyMatchingMember(matchingType aMatches[], int nMatches)
 
    @return index of empty element, otherwise return -1
 */
-
 int
 emptyLanguageMember(languageType aLanguages[], int nLanguages)
 {
@@ -1633,7 +1627,6 @@ emptyLanguageMember(languageType aLanguages[], int nLanguages)
 
    @return array filled with the inputted sentence
 */
-
 void
 getSentence(char strInputSentence[])
 {
@@ -1783,6 +1776,7 @@ findTranslation(str strSourceLanguage, str strFileTranslations[][MAX_ENTRIES], s
 
 /* simpleTranslation translates a sentence according to the available entry
    @param strFilename - string of the filename to be opened
+   
    @return the translated sentence
 */
 
