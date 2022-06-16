@@ -1,9 +1,10 @@
 /*********************************************************************************************************
-This is to certify that this project is my own work, based on my personal efforts in studying and applying 
-the concepts learned. I have constructed the functions and their respective algorithms and corresponding 
-code by myself. The program was run, tested, and debugged by my own efforts. I further certify that I have 
-not copied in part or whole or otherwise plagiarized the work of other students and/or persons.
-Mikkel Gamboa, DLSU ID# <number> | Enrique Lejano, DLSU ID# 12140996
+This is to certify that this project is our own work, based on our personal efforts in studying and 
+applying the concepts learned. We have constructed the functions and their respective algorithms 
+and corresponding code by ourselves. The program was run, tested, and debugged by our own 
+efforts. We further certify that we have not copied in part or whole or otherwise plagiarized the 
+work of other students and/or persons.
+                                    Mikkel Gamboa, DLSU ID# 12132195 | Enrique Lejano, DLSU ID# 12140996
 *********************************************************************************************************/
 
 #include "manage-tools.c"
