@@ -1465,23 +1465,23 @@ fileReader(str strFilename, str strFileWords[MAX_ENTRIES], char strFileSentence[
                 splitSentence(strFileSentence, strLineWords, nLineElem);
                 (*nFileWords) += (*nLineElem); // number of words in the line is incremented to the number of words in the file
                 (*nLineElem) = 0; // reset number of words in the line
-            }
-
-            // loop for Language and Translation
-            for (i = 0; i < 2; i++)
-            {
-                // if the word in the line is not empty and is not a new line
-                if (strcmp(strLineWords[i], "") != 0 && strcmp(strLineWords[i], "\n") != 0)
+           
+                // loop for Language and Translation
+                for (i = 0; i < 2; i++)
                 {
-                    strcpy(strFileWords[j], strLineWords[i]); // copy word in the line to array of all the words
-                    j++; // increment position to edit
+                    // if the word in the line is not empty and is not a new line
+                    if (strcmp(strLineWords[i], "") != 0 && strcmp(strLineWords[i], "\n") != 0)
+                    {
+                        strcpy(strFileWords[j], strLineWords[i]); // copy word in the line to array of all the words
+                        j++; // increment position to edit
+                    }
                 }
             }
         }
         fclose(pText); // close file after using
     }
     // if file cannot be opened
-    else printf("Cannot open file for writing.\n");
+    else printf("Cannot open file for reading.\n");
 }
 
 /* matchingPairs checks if there are any matching language and word pairs
@@ -1583,7 +1583,7 @@ getSentence(char strInputSentence[])
 
         // Sentence input should have at least 1 character
         if (strcmp(&strInputSentence[0], "\0") == 0)
-            printf("Sentence/Phrase should have at least 1 character");
+            printf("Sentence/Phrase should have at least 1 character\n");
         
     } while (strcmp(&strInputSentence[0], "\0") == 0);
 }
@@ -1619,6 +1619,7 @@ identifyML(int *nInputElem, int *nLineElem, int *nFileWords, char strFilename[])
     *nLineElem = 0;
     nMatches = nLanguages = 1;
     memset(aLanguages, 0, sizeof(char)*LANGUAGES);
+    memset(strFileWords, 0, sizeof(char)*MAX_ENTRIES);
 
     // gets the sentence/phrase from the user
     getSentence(strInputSentence);
@@ -1802,7 +1803,7 @@ simpleTranslation(char strFilename[])
         fclose(pText); // close file
     }
     // if file cannot be opened
-    else printf("Cannot open file for writing.\n");
+    else printf("Cannot open file for reading.\n");
     
     // loop for number of words
     for (i = 0; i < nWordCount; i++)
