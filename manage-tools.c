@@ -70,11 +70,9 @@ getMDInput(int* pMLInput)
 */
 void
 getLTInput(int* pMLInput)
-{
-    char cDump;
-    
+{   
     printf("Choose tool option: ");
-    scanf("%d%c", pMLInput, &cDump);
+    scanf("%d", pMLInput);
 }
 
 /*  Lets user move around the main menu
@@ -82,9 +80,9 @@ getLTInput(int* pMLInput)
     @param nMLInput - stores menu navigation choice (Manage/Tools)
     @param aEntries - array of entryTag structs
     @param pCount - pointer to no. of entries in database
-    @param pInputElem - 
-    @param pLineElem
-    @param pFileWords
+    @param nInputElem - number of words in the sentence/phrase of the user input
+    @param nLineElem - number of words in the line
+    @param nFileWords - number of words in the source file
 */
 void
 switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount, int *pInputElem, int *pLineElem, int *pFileWords)
@@ -122,7 +120,7 @@ switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount, int *
 }
 
 /*  Function for moving around Manage Data menu
-    @param nMLInput
+    @param nMLInput - stores menu navigation choice (Manage/Tools)
     @param aEntries - array of entryTag structs
     @param pCount - pointer to no. of entries in database
 */
@@ -171,21 +169,28 @@ switchMDMenu(int nMLInput, entry aEntries[], int *pCount)
 }
 
 /*  Function for moving around Language Tools menu
-    @param nMLInput
-    @param pInputElem
-    @param pLineElem
-    @param pFileWords
+    @param nMLInput - stores menu navigation choice (Manage/Tools)
+    @param nInputElem - number of words in the sentence/phrase of the user input
+    @param nLineElem - number of words in the line
+    @param nFileWords - number of words in the source file
 */
 void
 switchLTMenu(int nMLInput, int *pInputElem, int *pLineElem, int *pFileWords)
 {
+    char strFilename[MAX_ENTRIES],
+         cDump;
+
+    printf("Enter filename: ");
+    scanf(" %s%c", strFilename, &cDump); //receives filename and dumps enter key
+    
     switch(nMLInput)
     {
         case 1:
-            identifyML(pInputElem, pLineElem, pFileWords);
+            identifyML(pInputElem, pLineElem, pFileWords, strFilename);
             break;
+            
         case 2:
-
+            simpleTranslation(strFilename);
             break;
 
         // Exits LT Menu
@@ -1305,86 +1310,272 @@ void import(entry aEntries[], int *pCount)
         printf("Error reading file.\n");
 }
 
-/*  
-    @param strSentence
-    @param strWords
-    @param pElem
+/* splitSentence splits the sentence string into different elements
+   of an array of words while also increasing the element count. It
+   also removes any and all characters that are not letters.
+   @param strSentence - string containing a sentence/phrase
+   @param strWords - 2D array of words separated into different
+                     elements of the array
+   @param nElem - number of elements in the 2D array
+
+   @return the words of the sentence, split up into different elements
 */
 
 void
-splitSentence(char strSentence[], str strWords[], int *pElem)
+splitSentence(char strSentence[], str strWords[], int *nElem)
 {
     int i, j = 0, nPunc = 0;
 
     // loop through all characters of strSentence including the \0
     for (i = 0; i <= strlen(strSentence); i++)
+
         // if it's a letter, add to array
         if ((strSentence[i] >= 'A' && strSentence[i] <= 'Z') ||
             (strSentence[i] >= 'a' && strSentence[i] <= 'z'))
         {
-            // if there has been a punctuation
+            // if there has been a punctuation previously
             if (nPunc > 0)
             {
-                strWords[*pElem][j] = '\0';
-                j = 0;
-                i--;
-                (*pElem)++;
-                nPunc = 0;
+                strWords[*nElem][j] = '\0'; // ends the previous word
+                j = 0; // resets letter space to begin a new word
+                i--; // moves back to evaluate letter again
+                (*nElem)++; // moves to the next word element
+                nPunc = 0; // resets number of punctations
             }
             else
             {
-                strWords[*pElem][j] = strSentence[i];
-                j++;
+                strWords[*nElem][j] = strSentence[i]; // places letter in word
+                j++; // moves to next letter space
             }
         }
+
         // if it's a space or \0, replace end of word with \0
         else if (strSentence[i] == ' ' || strSentence[i] == '\0')
         {
-            // if there is no \0 or a space after the current space or \0, replace (i.e. '  ')
+            // if there is no \0 or a space after the current space or \0, replace with \0
             if (strSentence[i+1] != ' ' || strSentence[i+1] != '\0')
             {
-                strWords[*pElem][j] = '\0';
-                j = 0;
-                (*pElem)++;
-                nPunc = 0;  
+                strWords[*nElem][j] = '\0'; // ends the previous word
+                j = 0; // resets letter space to begin a new word
+                (*nElem)++; // moves to the next word element
+                nPunc = 0; // resets number of punctations
             }
         }
-        // if it's none of the above, increment number of punctuations
+        // if it's none of the above
         else
-            nPunc++;
+            nPunc++; // increments number of punctuations
 }
 
+/* splitSentenceSpecs splits the sentence string into different 
+   elements of an array of words while also increasing the element 
+   count. It only removes commas, periods, question marks, and
+   exclamation points.
+   @param strSentence - string containing a sentence/phrase
+   @param strWords - 2D array of words separated into different
+                     elements of the array
+   @param nElem - number of elements in the 2D array
 
-/*  Identifies main language within text
-    @param pInputElem
-    @param pLineElem
-    @param pFileWords
+   @return the words of the sentence, split up into different elements
 */
+
 void
-identifyML(int *pInputElem, int *pLineElem, int *pFileWords)
+splitSentenceSpecs(char strSentence[], str strWords[], int *nElem)
 {
-    str             strInputWords[MAX_ENTRIES],
-                    strFileWords[MAX_ENTRIES];
-    languageType    aLanguages[LANGUAGES];
-    matchingType    aMatches[MAX_ENTRIES];
-    char            strFilename[MAX_ENTRIES],
-                    strInputSentence[MAX_ENTRIES+1],
-                    strFileSentence[MAX_ENTRIES+1];
-    int             i, j, k, 
-                    nMatches, 
-                    nLanguages, 
-                    nDuplicate, 
-                    index = 0,
-                    max = 0;
+    int i, j = 0, nPunc = 0;
 
-    *pInputElem = 0;
-    *pLineElem = 0;
-    nMatches = nLanguages = 1;
-    memset(aLanguages, 0, sizeof(char)*LANGUAGES);
+    // loop through all characters of strSentence including the \0
+    for (i = 0; i <= strlen(strSentence); i++)
 
+        // if it's a space or \0
+        if (strSentence[i] == ' ' || strSentence[i] == '\0')
+        {
+            // if there is no space or \0 after the current space or \0, replace with \0
+            if (strSentence[i+1] != ' ' || strSentence[i+1] != '\0')
+            {
+                strWords[*nElem][j] = '\0'; // ends the previous word
+                j = 0; // resets letter space to begin a new word
+                (*nElem)++; // moves to the next word element
+                nPunc = 0; // resets number of punctations  
+            }
+        }
+
+        // if it's a comma, period, exclamation point or question mark
+        else if (strSentence[i] == ',' || strSentence[i] == '.' ||
+                 strSentence[i] == '!' || strSentence[i] == '?')
+        {
+            nPunc++; //increment number of punctuations
+        }
+        
+        // if it's none of the above
+        else 
+        {
+            // if there has been a punctuation
+            if (nPunc > 0)
+            {
+                strWords[*nElem][j] = '\0';// ends the previous word
+                j = 0; // resets letter space to begin a new word
+                i--; // moves back to evaluate letter again
+                (*nElem)++; // moves to the next word element
+                nPunc = 0; // resets number of punctations
+            }
+
+            // if no punctuation
+            else
+            {
+                strWords[*nElem][j] = strSentence[i]; // places letter in word
+                j++; // moves to next letter space
+            }
+        }
+}
+
+/* fileReader safely opens and closes the file while separating all the
+   words into different elements of one array excluding all punctuation marks.
+   @param strFilename - string of the filename to be opened
+   @param strFileWords - 2D array containing all the words in the file without
+                         punctuation marks
+   @param strFileSentence - string containing one entire line in the file
+   @param nLineElem - number of elements in the line
+   @param nFileWords - number of elements in the source file
+
+   @return the words of the sentence, split up into different elements
+*/
+
+void
+fileReader(str strFilename, str strFileWords[MAX_ENTRIES], char strFileSentence[151], int *nLineElem, int *nFileWords)
+{
+    FILE *pText;
+    str  strLineWords[MAX_LETTERS];
+    int i, j = 0;
+
+    // checks if file can be opened and read
+    if ((pText = fopen(strFilename, "r")) != NULL)
+    {
+        // while the file has not reached the end of file
+        while(!feof(pText))
+        {
+            // gets a sentence string with at most 151 characters of the current line in the file
+            fgets(strFileSentence, 151, pText);
+            // removes the \n and replaces it with a \0
+            strFileSentence[strlen(strFileSentence) - 1] = '\0';
+
+            // if the first element is not empty
+            if (strcmp(&strFileSentence[0], "") != 0)
+            {
+                // split file's current line into separate words
+                splitSentence(strFileSentence, strLineWords, nLineElem);
+                (*nFileWords) += (*nLineElem); // number of words in the line is incremented to the number of words in the file
+                (*nLineElem) = 0; // reset number of words in the line
+            }
+
+            // loop for Language and Translation
+            for (i = 0; i < 2; i++)
+            {
+                // if the word in the line is not empty and is not a new line
+                if (strcmp(strLineWords[i], "") != 0 && strcmp(strLineWords[i], "\n") != 0)
+                {
+                    strcpy(strFileWords[j], strLineWords[i]); // copy word in the line to array of all the words
+                    j++; // increment position to edit
+                }
+            }
+        }
+        fclose(pText); // close file after using
+    }
+    // if file cannot be opened
+    else printf("Cannot open file for writing.\n");
+}
+
+/* matchingPairs checks if there are any matching language and word pairs
+   in an array
+   @param strFileWords - 2D array containing all the words in the file without
+                         punctuation marks
+   @param aMatches - array of words to check matching against
+   @param nFileWords - number of elements in the source file
+   @param j - index of current FileWord to be checked
+
+   @return 1 if there is a match, return 0 if none
+*/
+
+int
+matchingPairs(str strFileWords[], matchingType aMatches[], int *nFileWords, int j)
+{
+    int i, nMatchCount = 0;
+
+    // loop for total number of words in the file
+    for (i = 0; i < *nFileWords; i++)
+    {
+        // if there is a match
+        if (strcmp(strFileWords[j], aMatches[i].word) == 0 &&
+            strcmp(strFileWords[j-1], aMatches[i].language) == 0)
+            nMatchCount++; // increment number of matches
+    }
+
+    // if there is a match
+    if(nMatchCount > 0)
+        return 1;
+    // if there are no matches
+    else
+        return 2;
+}
+
+/* empyMatchingMember looks for an empty element in the array with the matches
+   @param aMatches - array of words to check matching against
+   @param nMatches - number of matches
+
+   @return index of empty element, otherwise return -1
+*/
+
+int
+emptyMatchingMember(matchingType aMatches[], int nMatches)
+{
+    int i;
+
+    // loop for number of matches
+    for (i = 0; i < nMatches; i++)
+    {
+        // if there is an empty member in the array
+        if (strcmp(aMatches[i].language, "") == 0 &&
+            strcmp(aMatches[i].word, "") == 0)
+            return i; // return index of empty member
+    }
+
+    // if there is none return -1
+    return -1;
+}
+
+/* empyLanguageMember looks for an empty element in the array with the languages
+   @param aLanguages - array of languages found in the sentence string
+   @param nLanguages - number of elements in the aLanguages array
+
+   @return index of empty element, otherwise return -1
+*/
+
+int
+emptyLanguageMember(languageType aLanguages[], int nLanguages)
+{
+    int i;
+
+    // loop for number of languages
+    for (i = 0; i < nLanguages; i++)
+        // if there is an empty member in the array
+        if (strcmp(aLanguages[i].language, "") == 0)
+            return i; // return index of empty member
+    
+    // if there is none return -1
+    return -1;
+}
+
+/* getSentence gets a sentence or phrase from the terminal input
+   @param strInputSentence - array to store the sentence/phrase
+
+   @return array filled with the inputted sentence
+*/
+
+void
+getSentence(char strInputSentence[])
+{
     do 
     {
-        printf("Enter sentence or phrase: \n");
+        printf("Enter sentence or phrase: ");
         // gets a sentence string with at most 151 characters through terminal input
         fgets(strInputSentence, 151, stdin); 
         // replaces the newline character with a null character
@@ -1395,55 +1586,87 @@ identifyML(int *pInputElem, int *pLineElem, int *pFileWords)
             printf("Sentence/Phrase should have at least 1 character");
         
     } while (strcmp(&strInputSentence[0], "\0") == 0);
+}
+
+
+/* identifyML identifies the main language of a sentence/phrase
+   @param nInputElem - number of elements in the inputted sentence/phrase
+   @param nLineElem - number of elements in the line
+   @param nFileWords - number of elements in the source file
+   @param strFilename - string of the filename to be opened
+
+   @return the language with the most matching entries
+*/
+void
+identifyML(int *nInputElem, int *nLineElem, int *nFileWords, char strFilename[])
+{
+    str             strInputWords[MAX_ENTRIES],
+                    strFileWords[MAX_ENTRIES];
+    languageType    aLanguages[LANGUAGES];
+    matchingType    aMatches[MAX_ENTRIES];
+    char            strFileSentence[MAX_ENTRIES+1],
+                    strInputSentence[MAX_ENTRIES+1];
+    int             i, j, k, 
+                    nMatches, 
+                    nLanguages, 
+                    nDuplicate, 
+                    index = 0,
+                    max = 0,
+                    max2 = 0;
+
+    // resetting variables
+    *nInputElem = 0;
+    *nLineElem = 0;
+    nMatches = nLanguages = 1;
+    memset(aLanguages, 0, sizeof(char)*LANGUAGES);
+
+    // gets the sentence/phrase from the user
+    getSentence(strInputSentence);
 
     // split user's sentence input into separate words
-    splitSentence(strInputSentence, strInputWords, pInputElem);
+    splitSentenceSpecs(strInputSentence, strInputWords, nInputElem);
 
-    printf("Enter filename: \n");
-    scanf(" %s", strFilename);
+    // reads the file and places all the words in one array
+    fileReader(strFilename, strFileWords, strFileSentence, nLineElem, nFileWords);
 
-    fileReader(strFilename, strFileWords, strFileSentence, pLineElem, pFileWords);
-
-    for (i = 0; i < *pInputElem; i++)
+    // loop for the number of words in the sentence/phrase
+    for (i = 0; i < *nInputElem; i++)
     {
-        memset(aMatches, 0, sizeof(char)*MAX_ENTRIES);
-        //printf("Step 3\n");
-        for (j = 0; j < *pFileWords; j++)
+        memset(aMatches, 0, sizeof(char)*MAX_ENTRIES); // reset matches per word
+        
+        // loop for number of words in the file
+        for (j = 0; j < *nFileWords; j++)
         {
-           // printf("Step 4\n");
+           // if sentence word and file word match
             if (strcmp(strInputWords[i], strFileWords[j]) == 0)
             {
-                //printf("Step 5\n");
-                if (MatchingPairs(strFileWords, aMatches, pFileWords, j) == 2)
+                // if there are no matching pairs of the same word
+                if (matchingPairs(strFileWords, aMatches, nFileWords, j) == 2)
                 {
-                    //printf("Step 6\n");
-                    nDuplicate = 0;
-                    index = emptyMatchingMember(aMatches, nMatches);
-                   // printf("index1 - %d\n", index);
-                    strcpy(aMatches[index].language, strFileWords[j-1]);
-                    strcpy(aMatches[index].word, strFileWords[j]);
-                    nMatches++;
-                   // printf("Language added: %s, Word added: %s\n", aMatches[index].language, aMatches[index].word);
+                    nDuplicate = 0; // reset number of duplicates
+                    index = emptyMatchingMember(aMatches, nMatches); // finds the index of an empty member
+                    strcpy(aMatches[index].language, strFileWords[j-1]); // places language into the matching array
+                    strcpy(aMatches[index].word, strFileWords[j]); // places word into the matching array
+                    nMatches++; // increments number of matches
 
-                    for (k = 0; k <= nLanguages; k++)
+                    // loop for the number of languages 
+                    for (k = 0; k < nLanguages; k++)
                     {
-                       // printf("Language Word - %s, File Word - %s\n", aLanguages[k].language, strFileWords[j-1]);
+                        // if language already has a count
                         if (strcmp(aLanguages[k].language, strFileWords[j-1]) == 0 && aLanguages[k].nLanguageCount > 0)
                         {
-                            //printf("theinbetween\nLanguages - %s, Count - %d\n", aLanguages[k].language, aLanguages[k].nLanguageCount);
-                            aLanguages[index].nLanguageCount++;
-                            nDuplicate++;
+                            aLanguages[index].nLanguageCount++; // increment count of the language
+                            nDuplicate++; // increment number of duplicates
                         }
                     }
+
+                    // if there are no duplicates
                     if (nDuplicate == 0)
                     {
-                        index = emptyLanguageMember(aLanguages, nLanguages);
-                        //printf("index2 - %d\n", index);
-                        strcpy(aLanguages[index].language, strFileWords[j-1]);
-                        aLanguages[index].nLanguageCount++;
-                        nLanguages++;
-                        k = nLanguages;
-                        //printf("Language added: %s, Language count: %d\n", aLanguages[index].language, aLanguages[index].nLanguageCount);
+                        index = emptyLanguageMember(aLanguages, nLanguages); // finds the index of an empty member
+                        strcpy(aLanguages[index].language, strFileWords[j-1]); // places language into the language array
+                        aLanguages[index].nLanguageCount++; // increments the language in the language array
+                        nLanguages++; // increments total number of languages
                     }
                     
                 }
@@ -1451,114 +1674,158 @@ identifyML(int *pInputElem, int *pLineElem, int *pFileWords)
         }
     }
 
+    // if there are no existing languages
     if (nLanguages == 1)
         printf("Cannot determine the language\n");
     
+    // if there are existing languages
     else if (nLanguages > 1)
     {
-        for (i = 0; i < nLanguages; i++)
-            if(max < aLanguages[i].nLanguageCount)
+        for (i = 0; i < nLanguages-1; i++)
+        {
+            printf("Language: %s - Count: %d\n", aLanguages[i].language, aLanguages[i].nLanguageCount);
+        }
+        max = 0;
+        for (i = 0; i < nLanguages-1; i++)
+            if (aLanguages[max].nLanguageCount < aLanguages[i].nLanguageCount)
                 max = i;
         printf("Language: %s\n", aLanguages[max].language);
+
+        max2 = 0;
+        for (i = 0; i < nLanguages-1; i++)
+        {
+            printf("Current Test Max2: %s %d - Max1: %s %d\n", aLanguages[max2].language, aLanguages[max2].nLanguageCount, aLanguages[max].language, aLanguages[i].nLanguageCount);
+            if (aLanguages[max2].nLanguageCount <= aLanguages[i].nLanguageCount && strcmp(aLanguages[max2].language, aLanguages[max].language) != 0)
+                max2 = i;
+        }
+        printf("Top 2 languages are: %s and %s\n", aLanguages[max].language, aLanguages[max2].language);
     }
 }
 
-/*
-    @param aLanguages
-    @param nLanguages
+/* findTranslation looks for a matching translation and returns the index
+   @param strSourceLanguage - string of the source language
+   @param strFileTranslations - array of all the words in the file separated
+                                by translation
+   @param strCurrentWord - word from the user's input that is being evaluated
+
+   @return index of translation, otherwise returns -1
 */
+
 int
-emptyLanguageMember(languageType aLanguages[], int nLanguages)
+findTranslation(str strSourceLanguage, str strFileTranslations[][MAX_ENTRIES], str strCurrentWord)
 {
-    int i;
+    int i, j;
 
-    for (i = 0; i < nLanguages; i++)
-        if (strcmp(aLanguages[i].language, "") == 0)
-            return i;
-    return 0;
-}
-
-/*
-    @param aMatches
-    @param nMatches
-*/
-int
-emptyMatchingMember(matchingType aMatches[], int nMatches)
-{
-    int i;
-
-    for (i = 0; i < nMatches; i++)
+    for (i = 0; i < MAX_ENTRIES; i++)
     {
-        if (strcmp(aMatches[i].language, "") == 0 &&
-            strcmp(aMatches[i].word, "") == 0)
-            return i;
+        for (j = 0; j < MAX_PAIRS*2; j++)
+        {
+            if (strcmp(strSourceLanguage, strFileTranslations[i][j]) == 0 &&
+                strcmp(strCurrentWord, strFileTranslations[i][j+1]) == 0)
+                {
+                    return i;
+                }
+        }
     }
-    return 0;
+    return -1;
 }
 
-/*
-    @param strFilename
-    @param strFileWords
-    @param strFileSentence
-    @param pLineElem
-    @param pFileWords
+/* simpleTranslation translates a sentence according to the available entry
+   @param strFilename - string of the filename to be opened
+
+   @return the translated sentence
 */
+
 void
-fileReader(str strFilename, str strFileWords[MAX_ENTRIES], char strFileSentence[151], int *pLineElem, int *pFileWords)
+simpleTranslation(char strFilename[])
 {
     FILE *pText;
-    str  strLineWords[MAX_LETTERS];
-    int i, j = 0;
+    str  strSourceLanguage,
+         strTranslatedLanguage,
+         strInputWords[MAX_ENTRIES],
+         strTempWords[MAX_ENTRIES],
+         strFileTranslations[MAX_ENTRIES][MAX_ENTRIES];
+    char strInputSentence[MAX_ENTRIES+1],
+         strFileSentence[MAX_ENTRIES+1],
+         cDump,
+         cOpt;
+    int  i = 0, j = 0,
+         nWordCount = 0,
+         nTempCount = 0,
+         index = 0;
+    
+    printf("Enter the language of the source text: ");
+    scanf(" %s%c", strSourceLanguage, &cDump); // receives source language and dumps \n
+    printf("Enter the language to translate to: ");
+    scanf(" %s%c", strTranslatedLanguage, &cDump); // receives translated language and dumps \n
 
+    do
+    {
+
+    // resets variables
+    memset(strInputWords, 0, sizeof(char)*MAX_ENTRIES);
+    nWordCount = 0;
+
+    // retrieves sentence/phrase from user
+    getSentence(strInputSentence);
+    // splits the sentence/phrase from user into different words
+    splitSentenceSpecs(strInputSentence, strInputWords, &nWordCount);
+
+    // if file can be opened and read
     if ((pText = fopen(strFilename, "r")) != NULL)
     {
+        // while the file has not reached the end of file
         while(!feof(pText))
         {
-            // gets a sentence string with at most 151 characters of the current line in the file
+            // retrieves the current line until \n
             fgets(strFileSentence, 151, pText);
+            // removes the \n and replaces it with \0
             strFileSentence[strlen(strFileSentence) - 1] = '\0';
 
+            // if the string is not empty
             if (strcmp(&strFileSentence[0], "") != 0)
             {
                 // split file's current line into separate words
-                splitSentence(strFileSentence, strLineWords, pLineElem);
-                (*pFileWords) += (*pLineElem);
-                (*pLineElem) = 0;
+                splitSentence(strFileSentence, strTempWords, &nTempCount);
+                strcpy(strFileTranslations[i][j], strTempWords[nTempCount-2]);
+                strcpy(strFileTranslations[i][j+1], strTempWords[nTempCount-1]);
+                j+=2;
             }
 
-            for (i = 0; i < 2; i++)
+            // the string is empty
+            else if (strcmp(&strFileSentence[0], "") == 0)
             {
-                if (strcmp(strLineWords[i], "") != 0 && strcmp(strLineWords[i], "\n") != 0)
-                {
-                    strcpy(strFileWords[j], strLineWords[i]);
-                    j++;
-                }
+                i++;
+                j = 0;
             }
         }
-        fclose(pText);
+        fclose(pText); // close file
     }
+    // if file cannot be opened
     else printf("Cannot open file for writing.\n");
-}
-
-/*
-    @param strFileWords
-    @param aMatches
-    @param pFileWords
-    @param j
-*/
-int
-MatchingPairs(str strFileWords[], matchingType aMatches[], int *pFileWords, int j)
-{
-    int i, nMatchCount = 0;
-
-    for (i = 0; i < *pFileWords; i++)
+    
+    // loop for number of words
+    for (i = 0; i < nWordCount; i++)
     {
-        if (strcmp(strFileWords[j], aMatches[i].word) == 0 &&
-            strcmp(strFileWords[j-1], aMatches[i].language) == 0)
-            nMatchCount++;
+        // retrieve index of translation
+        index = findTranslation(strSourceLanguage, strFileTranslations, strInputWords[i]);
+        // if index is found
+        if (index > -1)
+            // loop for max number of language and word count
+            for (j = 0; j < MAX_PAIRS*2; j++)
+                // if translation language is found
+                if (strcmp(strTranslatedLanguage, strFileTranslations[index][j]) == 0)
+                    strcpy(strInputWords[i], strFileTranslations[index][j+1]); // replace word with translated word
     }
-        if(nMatchCount > 0)
-            return 1;
-        else
-            return 2;
+
+    // prints the translated sentence
+    printf("Translated Sentence: ");
+    for (i = 0; i < nWordCount; i++)
+        printf("%s ", strInputWords[i]);
+    
+    // asks user if they want to translate a different sentence
+    printf("\nDo you want to translate a different sentence? [Y/N]: ");
+    scanf("%c%c", &cOpt, &cDump);
+    
+    } while ((cOpt == 'Y' || cOpt == 'y'));
 }
