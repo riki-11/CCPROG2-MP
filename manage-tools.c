@@ -1633,6 +1633,7 @@ identifyML(int *nInputElem, int *nLineElem, int *nFileWords, char strFilename[])
     for (i = 0; i < *nInputElem; i++)
     {
         memset(aMatches, 0, sizeof(char)*MAX_ENTRIES); // reset matches per word
+        nDuplicate = 0; // reset number of duplicates
         
         // loop for number of words in the file
         for (j = 0; j < *nFileWords; j++)
@@ -1643,19 +1644,18 @@ identifyML(int *nInputElem, int *nLineElem, int *nFileWords, char strFilename[])
                 // if there are no matching pairs of the same word
                 if (matchingPairs(strFileWords, aMatches, nFileWords, j) == 2)
                 {
-                    nDuplicate = 0; // reset number of duplicates
                     index = emptyMatchingMember(aMatches, nMatches); // finds the index of an empty member
                     strcpy(aMatches[index].language, strFileWords[j-1]); // places language into the matching array
                     strcpy(aMatches[index].word, strFileWords[j]); // places word into the matching array
                     nMatches++; // increments number of matches
 
                     // loop for the number of languages 
-                    for (k = 0; k < nLanguages; k++)
+                    for (k = 0; k < nLanguages-1; k++)
                     {
                         // if language already has a count
                         if (strcmp(aLanguages[k].language, strFileWords[j-1]) == 0 && aLanguages[k].nLanguageCount > 0)
                         {
-                            aLanguages[index].nLanguageCount++; // increment count of the language
+                            aLanguages[k].nLanguageCount++; // increment count of the language
                             nDuplicate++; // increment number of duplicates
                         }
                     }
