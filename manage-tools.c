@@ -85,7 +85,13 @@ getLTInput(int* pMLInput)
     @param nFileWords - number of words in the source file
 */
 void
-switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount, int *pInputElem, int *pLineElem, int *pFileWords)
+switchMainMenu(int nMMInput, 
+               int* nMLInput, 
+               entry aEntries[], 
+               int *pCount, 
+               int *pInputElem, 
+               int *pLineElem, 
+               int *pFileWords)
 {
     switch(nMMInput)
     {
@@ -109,11 +115,6 @@ switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount, int *
                     switchLTMenu(*nMLInput, pInputElem, pLineElem, pFileWords);
             } while (*nMLInput != 3);
             break;
-        
-        case 3:
-            printf("Terminating Program\n");
-            return;
-
         default:
             printf("Invalid Input");
     }
@@ -125,7 +126,9 @@ switchMainMenu(int nMMInput, int* nMLInput, entry aEntries[], int *pCount, int *
     @param pCount - pointer to no. of entries in database
 */
 void
-switchMDMenu(int nMLInput, entry aEntries[], int *pCount)
+switchMDMenu(int nMLInput, 
+             entry aEntries[], 
+             int *pCount)
 {
     switch(nMLInput)
     {
@@ -175,7 +178,10 @@ switchMDMenu(int nMLInput, entry aEntries[], int *pCount)
     @param nFileWords - number of words in the source file
 */
 void
-switchLTMenu(int nMLInput, int *pInputElem, int *pLineElem, int *pFileWords)
+switchLTMenu(int nMLInput, 
+             int *pInputElem, 
+             int *pLineElem, 
+             int *pFileWords)
 {
     char strFilename[MAX_ENTRIES],
          cDump;
@@ -206,7 +212,8 @@ switchLTMenu(int nMLInput, int *pInputElem, int *pLineElem, int *pFileWords)
 /*  Sets the no. of pairs of all entries to 0 at beginning of program
     @param aEntries - array of entryTag structs
 */
-void initDatabase(entry aEntries[])
+void
+initDatabase(entry aEntries[])
 {
     int i;
     for (i = 0; i < MAX_ENTRIES; i++)
@@ -217,7 +224,9 @@ void initDatabase(entry aEntries[])
     @param aEntries - array of entryTag structs
     @param pCount - pointer to no. of entries in database
 */
-void clearDatabase(entry aEntries[], int *pCount)
+void
+clearDatabase(entry aEntries[], 
+              int *pCount)
 {
     int i;
     entry blankEntry;
@@ -237,7 +246,9 @@ void clearDatabase(entry aEntries[], int *pCount)
     @param strLanguage - stores input for Language in pair
     @param strWord - stores input for Word in pair
 */
-void inputPair(str strLanguage, str strWord)
+void
+inputPair(str strLanguage, 
+          str strWord)
 {
     do 
     {
@@ -259,9 +270,14 @@ void inputPair(str strLanguage, str strWord)
     @param nCount - no. of entries in database
     @param strLanguage - Language to be checked
     @param strWord - Word to be checked
+
     returns no. of entries where specific pair is found, 0 if none
 */
-int pairExists(entry aEntries[], int nCount, str strLanguage, str strWord)
+int
+pairExists(entry aEntries[], 
+           int nCount, 
+           str strLanguage, 
+           str strWord)
 {
     int i, j, k, nFound = 0;
 
@@ -295,7 +311,9 @@ int pairExists(entry aEntries[], int nCount, str strLanguage, str strWord)
     @param aEntries - array of entryTag structs
     @param pCount - pointer to no. of entries in database
 */
-void addEntry(entry aEntries[], int *pCount)
+void
+addEntry(entry aEntries[], 
+         int *pCount)
 {
     str strLanguage, strWord;
     char newEntry;
@@ -334,14 +352,59 @@ void addEntry(entry aEntries[], int *pCount)
                "\nReturning to Manage Data Menu...\n");
 }
 
+/*  Function for adding a pair to an entry
+    @param aEntries - array of entryTag structs
+    @param nCount - no. of entries in database
+    @param nPairCount - no. of pairs in the entry that is being updated
+    @param strLanguage - Language to be checked
+    @param strWord - Word to be checked
+    returns 1 if successfully added a pair and 0 if otherwise
+*/
+void
+addPair(entry aEntries[], 
+        int nIndex, 
+        int nPairCount, 
+        str strLanguage, 
+        str strWord)
+{
+    int i;
+
+    // Before adding a pair, check first if the language already exists in this specific entry
+    for (i = 0; i < nPairCount; i++)
+        // Check if the language already exists
+        if (strcmp(aEntries[nIndex].aPairs[i].language, strLanguage) == 0)
+        {
+            printf("\nThe %s language already exists in this entry!\n", strLanguage);
+            return;
+        }
+
+    // If language was not found, add pair to entry
+    strcpy(aEntries[nIndex].aPairs[nPairCount].language, strLanguage);
+    strcpy(aEntries[nIndex].aPairs[nPairCount].translation, strWord);
+
+    // Update no. of pairs
+    aEntries[nIndex].nPairs += 1;
+
+    printf("\nSuccessfully added language-translation pair!\n");  
+
+    // If current entry reached max no. of pairs, notify user
+    if (aEntries[nIndex].nPairs >= 10)
+        printf("\nEntry has reached the maximum no. of language-translation pairs\n");
+}
+
 /*  Function for actually creating the new entry (separate from addEntry)
     @param aEntries - array of entryTag structs
     @param pCount - pointer to no. of entries in database
     @param strLanguage - Language to be checked
     @param strWord - Word to be checked
-    returns a char to act as a base case to indicate when to stop making new entries
+
+    @returns a char to act as a base case to indicate when to stop making new entries
 */  
-char makeNewEntry(entry aEntries[], int *pCount, str strLanguage, str strWord)
+char
+makeNewEntry(entry aEntries[], 
+             int *pCount, 
+             str strLanguage, 
+             str strWord)
 {
     char cRepeat, newEntry;
     int nPairFound;
@@ -400,50 +463,44 @@ char makeNewEntry(entry aEntries[], int *pCount, str strLanguage, str strWord)
     return cRepeat;
 }
 
-
-/*  Function for adding a pair to an entry
+/*  Finds entries that contain the language-translation pair being searched for
     @param aEntries - array of entryTag structs
     @param nCount - no. of entries in database
-    @param nPairCount - no. of pairs in the entry that is being updated
-    @param strLanguage - Language to be checked
-    @param strWord - Word to be checked
-    returns 1 if successfully added a pair and 0 if otherwise
+    @param sLanguage - Language to be checked
+    @param sWord - Word to be checked
+    @param aDuplicates - array that keeps track of entries that contain the pair
+
+    @returns index of entry where language-translation pair was found, -1 if otherwise
 */
-void addPair(entry aEntries[], int nIndex, int nPairCount, str strLanguage, str strWord)
+int
+searchPair(entry aEntries[], 
+           int nCount, 
+           str strLanguage, 
+           str strWord, 
+           int aDuplicates[])
 {
-    int i;
-
-    // Before adding a pair, check first if the language already exists in this specific entry
-    // Go through each language in entry
-    for (i = 0; i < nPairCount; i++)
-        // Check if the language already exists, irrespective of case
-        if (strcasecmp(aEntries[nIndex].aPairs[i].language, strLanguage) == 0)
-        {
-            printf("\nThe %s language already exists in this entry!\n", strLanguage);
-            return;
-        }
-
-    // If language was not found, add pair to entry
-    // Add a pair to designated entry
-    strcpy(aEntries[nIndex].aPairs[nPairCount].language, strLanguage);
-    strcpy(aEntries[nIndex].aPairs[nPairCount].translation, strWord);
-
-    // Update no. of pairs
-    aEntries[nIndex].nPairs += 1;
-
-    printf("\nSuccessfully added language-translation pair!\n");  
-
-    // If current entry reached max no. of pairs, notify user
-    if (aEntries[nIndex].nPairs >= 10)
-        printf("\nEntry has reached the maximum no. of language-translation pairs\n");
+    int i, j;
+    
+    // Go through each entry
+    for (i = 0; i < nCount; i++)
+        // Go through each pair per entry and record any entries containing the pair being searched for
+        for  (j = 0; j < MAX_PAIRS; j++)
+            // Check if pair has already been found at this entry (aDuplicates[i] = 0 we haven't recorded the entry that contains the pair)
+            if (strcmp(strLanguage, aEntries[i].aPairs[j].language) == 0
+                && strcmp(strWord, aEntries[i].aPairs[j].translation) == 0 
+                && !aDuplicates[i])
+                    // Return the index of the entry where the pair was found
+                    return i;
+    return -1;
 }
-
 
 /*  Adds a language-translation pair to an existing entry
     @param aEntries - array of entryTag structs
     @param nCount - no. of entries in database
 */
-void addTranslation(entry aEntries[], int nCount)
+void
+addTranslation(entry aEntries[], 
+               int nCount)
 {
     char cRepeat;
     str strLanguage, strWord;
@@ -504,7 +561,6 @@ void addTranslation(entry aEntries[], int nCount)
 
         printf("\nReturning to Manage Data Menu...\n");
         return; // so that any succeeding entries don't need to be checked
-    
     }
 
     // Pair was found in more than one entry
@@ -541,7 +597,7 @@ void addTranslation(entry aEntries[], int nCount)
                 } while (cRepeat != 'Y' && cRepeat != 'y' && cRepeat != 'N' && cRepeat != 'n');   
             } while ((cRepeat == 'Y' || cRepeat == 'y') && aEntries[nIndex].nPairs < 10);
         }
-        // If desired entry contains 10 pairs already
+        // If selected entry contains 10 pairs already
         else if (aEntries[nIndex].nPairs >= 10)
             printf("This entry already has 10 entries. Returning to Manage Data Menu...\n");
         // If user inputs an entry index that DOESN'T contain the inputted pair
@@ -550,37 +606,14 @@ void addTranslation(entry aEntries[], int nCount)
     }
 }
 
-/*  Finds entries that contain the language-translation pair being searched for
-    @param aEntries - array of entryTag structs
-    @param nCount - no. of entries in database
-    @param sLanguage - Language to be checked
-    @param sWord - Word to be checked
-    @param aDuplicates - array that keeps track of entries that contain the pair
-    returns index of entry where language-translation pair was found, -1 if otherwise
-*/
-int searchPair(entry aEntries[], int nCount, str strLanguage, str strWord, int aDuplicates[])
-{
-    int i, j;
-    
-    // Go through each entry
-    for (i = 0; i < nCount; i++)
-        // Go through each pair per entry and record any entries containing the pair being searched for
-        for  (j = 0; j < MAX_PAIRS; j++)
-            // Check if pair has already been found at this entry (aDuplicates[i] = 0 we haven't recorded the entry that contains the pair)
-            if (strcmp(strLanguage, aEntries[i].aPairs[j].language) == 0
-                && strcmp(strWord, aEntries[i].aPairs[j].translation) == 0 
-                && !aDuplicates[i])
-                    // Return the index of the entry where the pair was found
-                    return i;
-    return -1;
-}
-
 
 /*  Modifies language-translation pair/s of one database entry.
     @param aEntries - array of entryTag structs
     @param nCount - no. of entries in database
 */
-void modifyEntry(entry aEntries[], int nCount)
+void 
+modifyEntry(entry aEntries[], 
+            int nCount)
 {
     char cModPair, cRepeat = ' ';
     str strLanguage, strWord;
@@ -610,6 +643,7 @@ void modifyEntry(entry aEntries[], int nCount)
             {
                 // Show all information and pairs for selected entry
                 printf("\nModifying this entry:\n");
+                sortEntries(aEntries, nCount);
                 displayEntry(&aEntries[nEntryChoice], nEntryChoice, aEntries[nEntryChoice].nPairs);
 
                 // Prompt user for pair to modify (add feature to let them cancel?)
@@ -677,7 +711,7 @@ void modifyEntry(entry aEntries[], int nCount)
         }
         // If an invalid entry is selected
         else if (nEntryChoice < 0 || nEntryChoice > nCount)
-            printf("\nInvalid entry. Returning to Manage Data Menu...\n");
+            printf("\nInvalid entry.\n");
 
     } while (nEntryChoice == 0);
 
@@ -688,7 +722,9 @@ void modifyEntry(entry aEntries[], int nCount)
     @param aEntries - array of entryTag structs
     @param pCount - pointer to no. of entries in database
 */
-void deleteEntry(entry aEntries[], int *pCount)
+void
+deleteEntry(entry aEntries[], 
+            int *pCount)
 {
     int i, nEntryChoice = 0;
     entry blankEntry;
@@ -743,7 +779,9 @@ void deleteEntry(entry aEntries[], int *pCount)
     @param aEntries - array of entryTag structs
     @param pCount - pointer to no. of entries in database
 */
-void deleteTranslation(entry aEntries[], int *pCount)
+void
+deleteTranslation(entry aEntries[], 
+                  int *pCount)
 {
     char cRepeat = ' ';
     int i, nEntryChoice = 0, nPairChoice, nPairCount;
@@ -776,6 +814,7 @@ void deleteTranslation(entry aEntries[], int *pCount)
 
                 // Show all information and pairs for selected entry
                 printf("\nDeleting a pair within this entry:\n");
+                sortEntries(aEntries, *pCount);
                 displayEntry(&aEntries[nEntryChoice], nEntryChoice + 1, nPairCount);
 
                 // Prompt user for pair to delete (add feature to let them cancel?)
@@ -841,64 +880,66 @@ void deleteTranslation(entry aEntries[], int *pCount)
     printf("\nReturning to Manage Data Menu...\n");
 }
 
-
-/*  Passing an entry into this function will sort the pairs alphabtically by language using Bubble Sort
-    @param *Entry is a pointer to an entryTag struct, since we need to modify the values
-    @param nPairCount is no. of pairs within this entry
+/*  Sorts all pairs within all entries alphabetically by language using Bubble Sort
+    @param aEntries - array of entryTag structs
+    @param nCount - no. of entries in database
 */
-void sortEntry(entry *Entry, int nPairCount)
+void
+sortEntries(entry aEntries[], 
+            int nCount)
 {
-    int i ,j, swapped;
-    str s1, s2, sTemp;
+    int i, j, k, swapped, nPairCount;
+    str s1, s2, strTemp;
 
-    /* 
-        Worst case, the languages are arranged backwards, so run the algorithm as many times as there are pairs in the entry.
-        Every time an iteration of the outermost for loop is done, at least 1 language will be sorted accordingly.
-    */
-    for (i = 0; i < nPairCount; i++)
+    // Go through each entry in database
+    for (i = 0; i < nCount; i++)
     {
-        // Variable for checking whether we found any values that needed to be swapped
-        swapped = 0;
-
-        // Go through each language until the last non-sorted language in the entry
-        for (j = 0; j < nPairCount - i - 1; j++)
+        nPairCount = aEntries[i].nPairs;
+        j = 0;
+        // Go through each pair in entry 
+        do
         {
-            strcpy(s1, Entry->aPairs[j].language); // Current language
-            strcpy(s2, Entry->aPairs[j+1].language); // Language to be compared to
+            // Variable for checking whether we found any values that needed to be swapped            
+            swapped = 0;
 
-            // if current language comes after (strcmp returns an int > 0) the language beside it, swap their positions
-            if (strcmp(s1, s2) > 0)
+            // Go through each language until the last non-sorted language in the entry
+            for (k = 0; k < nPairCount - j - 1; k++)
             {
-                // Swapping by changing the values within the entry
-                strcpy(Entry->aPairs[j].language, s2);
-                strcpy(Entry->aPairs[j+1].language, s1);
+                strcpy(s1, aEntries[i].aPairs[k].language); // Current language
+                strcpy(s2, aEntries[i].aPairs[k+1].language); // Language to be compared to
 
-                // Also transfer the translations accordingly
-                strcpy(sTemp, Entry->aPairs[j].translation); // translation 1
-                strcpy(Entry->aPairs[j].translation, Entry->aPairs[j+1].translation); // put translation 2 in translation 1's place
-                strcpy(Entry->aPairs[j+1].translation, sTemp); // put translation 1 in translation 2's place
+                // if current language comes after (strcmp returns an int > 0) the language beside it, swap their positions
+                if (strcmp(s1, s2) > 0)
+                {
+                    // Swapping by changing the values within the entry                   
+                    strcpy(aEntries[i].aPairs[k].language, s2);
+                    strcpy(aEntries[i].aPairs[k+1].language, s1);
 
-                swapped = 1;
+                    // Also transfer the translations accordingly
+                    strcpy(strTemp, aEntries[i].aPairs[k].translation); // translation 1
+                    strcpy(aEntries[i].aPairs[k].translation, aEntries[i].aPairs[k+1].translation); // put translation 2 in translation 1's place
+                    strcpy(aEntries[i].aPairs[k+1].translation, strTemp); // put translation 1 in translation 2's place
+
+                    swapped = 1;
+                }
             }
-        }
 
+            j++;
         // If no values were swapped, it means entry is already sorted, so no need to keep going through the entry
-        if (swapped == 0)
-            return;
+        } while (swapped == 1 && j < nPairCount);
     }
 }
 
- 
 /*  Function for displaying a SINGLE entry
     @param *Entry - pointer to entry to be displayed
     @param nEntryNum - number of entry being displayed
     @param nPairCount - no. of pairs within entry
 */
-void displayEntry(entry *Entry, int nEntryNum, int nPairCount)
+void displayEntry(entry *Entry, 
+                  int nEntryNum, 
+                  int nPairCount)
 {
     int i;
-    sortEntry(Entry, nPairCount); // Sort the entry before displaying it
-
     // Print entry and its pairs after sorting
     printf("--------------------------------\n");
     printf("Entry No. %d with %d pair/s\n\n", nEntryNum, Entry->nPairs);
@@ -911,13 +952,17 @@ void displayEntry(entry *Entry, int nEntryNum, int nPairCount)
     @param aEntries - array of entryTag structs
     @param nCount - no. of entries in database
 */
-void displayAllEntries(entry aEntries[], int nCount)
+void
+displayAllEntries(entry aEntries[], 
+                  int nCount)
 {
     char ch = 'N';
     int i = 0;
     printf("\n--------------------------------\n");
     printf("%d entries in the database\n", nCount);
     printf("--------------------------------\n\n");
+
+    sortEntries(aEntries, nCount);
 
     // While there's entries to show and while user hasn't exited the menu
     while (i < nCount && i >= 0 && (ch == 'N' || ch == 'n' || ch == 'P' || ch == 'p'))
@@ -965,7 +1010,9 @@ void displayAllEntries(entry aEntries[], int nCount)
     @param aEntries - array of entryTag structs
     @param nCount - no. of entries in database
 */
-void searchWord(entry aEntries[], int nCount)
+void
+searchWord(entry aEntries[], 
+           int nCount)
 {
     str strWord;
     char ch = 'N';
@@ -998,6 +1045,7 @@ void searchWord(entry aEntries[], int nCount)
             nEntryIndex = aFound[i];
             
             // Print the entry and its pairs
+            sortEntries(aEntries, nCount);
             displayEntry(&aEntries[nEntryIndex], nEntryIndex + 1, aEntries[nEntryIndex].nPairs);
 
             // GUI printing
@@ -1037,10 +1085,12 @@ void searchWord(entry aEntries[], int nCount)
 }
 
 /*  Lets user find a specific language-translation pair
-    @param 
-    @param 
+    @param aEntries - array of entryTag structs
+    @param nCount - no. of entries in database
 */
-void searchTranslation(entry aEntries[], int nCount)
+void
+searchTranslation(entry aEntries[], 
+                  int nCount)
 {
     str strLanguage, strWord;
     char ch = 'N';
@@ -1077,6 +1127,7 @@ void searchTranslation(entry aEntries[], int nCount)
             nEntryIndex = aFound[i];
             
             // Print the entry and its pairs
+            sortEntries(aEntries, nCount);
             displayEntry(&aEntries[nEntryIndex], nEntryIndex + 1, aEntries[nEntryIndex].nPairs);
 
             // GUI printing
@@ -1119,18 +1170,28 @@ void searchTranslation(entry aEntries[], int nCount)
     @param aEntries - array of entryTag structs
     @param nCount - no. of entries in database
 */
-void export(entry aEntries[], int nCount)
+void
+export(entry aEntries[], 
+       int nCount)
 {
     FILE *fp;
     int i, j;
-    str sFilename;
+    char strFilename[31];
 
-    printf("Input filename (including extension): ");
-    scanf("%s", sFilename);
+    do 
+    {
+        strcpy(strFilename, "");
+        printf("Input filename (including extension): ");
+        scanf("%s", strFilename);
+
+        if (strlen(strFilename) >= 30)
+            printf("\nFilename is too long, maximum of 30 characters only.\n");
+
+    } while (strlen(strFilename) >= 30);
 
     printf("\nExporting...\n");
     
-    if ((fp = fopen(sFilename, "w")) != NULL)
+    if ((fp = fopen(strFilename, "w")) != NULL)
     {
         // Go through each entry and each pair and write them to the output file
         for (i = 0; i < nCount; i++)
@@ -1140,7 +1201,7 @@ void export(entry aEntries[], int nCount)
             
             fprintf(fp, "\n");
         }
-        printf("\nSuccessfully exported %s.\n", sFilename);
+        printf("\nSuccessfully exported %s.\n", strFilename);
         fclose(fp);
     }
     else
@@ -1151,7 +1212,9 @@ void export(entry aEntries[], int nCount)
     @param aEntries - array of entryTag structs
     @param pCount - pointer to no. of entries in database
 */
-void import(entry aEntries[], int *pCount)
+void
+import(entry aEntries[], 
+       int *pCount)
 {
     FILE *fp;
     str sFilename;
@@ -1237,6 +1300,7 @@ void import(entry aEntries[], int *pCount)
                     if (buffer[0] == '\0')
                     {
                         // Display the entry that's been found
+                        sortEntries(aEntries, *pCount);
                         displayEntry(&newEntry, 0, nPairCount);
 
                         do
@@ -1733,7 +1797,6 @@ findTranslation(str strSourceLanguage, str strFileTranslations[][MAX_ENTRIES], s
 
 /* simpleTranslation translates a sentence according to the available entry
    @param strFilename - string of the filename to be opened
-
    @return the translated sentence
 */
 

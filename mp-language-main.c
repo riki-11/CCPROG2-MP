@@ -27,5 +27,6 @@ main()
         
     } while (nMMInput != 3);
 
+    printf("\nTerminating Program\n");
     return 0;
 }
