@@ -1675,8 +1675,7 @@ identifyML(int *nInputElem, int *nLineElem, int *nFileWords, char strFilename[])
                     nLanguages, 
                     nDuplicate, 
                     index = 0,
-                    max = 0,
-                    max2 = 0;
+                    max = 0;
 
     // resetting variables
     *nInputElem = 0;
