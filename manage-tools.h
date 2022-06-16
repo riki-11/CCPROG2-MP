@@ -50,8 +50,9 @@ void initDatabase(entry*);
 void clearDatabase(entry*, int*);
 
 // Manage Data functions
-void addEntry(entry*, int*);
+void inputPair(str, str);
 int pairExists(entry*, int, str, str);
+void addEntry(entry*, int*);
 void addPair(entry*, int, int, str, str);
 char makeNewEntry(entry*, int*, str, str);
 void addTranslation(entry*, int);
@@ -70,7 +71,7 @@ void import(entry*, int*);
 // Language Tool Functions
 void switchLTMenu(int, int*, int*, int*);
 void identifyML(int*, int*, int*);
-void FileReader(str, str[], char[], int*, int*);
-int MatchingPairs(str[], matchingType[], int*, int);
-int EmptyLanguageMember(languageType[], int);
-int EmptyMatchingMember(matchingType[], int);
+int emptyLanguageMember(languageType[], int);
+int emptyMatchingMember(matchingType[], int);
+int matchingPairs(str[], matchingType[], int*, int);
+void fileReader(str, str[], char[], int*, int*);
