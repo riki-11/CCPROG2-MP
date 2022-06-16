@@ -27,11 +27,19 @@ typedef struct entryTag {
     int nPairs;
 } entry;
 
+/* Struct for languages identified and its count
+    language - string for the language identified
+    nLanguageCount - no. languages identified, 0 by default
+*/
 typedef struct languageTag {
     str language;
     int nLanguageCount;
 } languageType;
 
+/* Struct for language and word pairs to be matched against
+    language - string for the language pair
+    word - string for the word pair
+*/
 typedef struct matchingTag {
     str language,
         word;
@@ -46,6 +54,7 @@ void getMDInput(int*);
 void getLTInput(int*);
 void switchMainMenu(int, int*, entry*, int*, int*, int*, int*);
 void switchMDMenu(int, entry*, int*);
+void switchLTMenu(int, int*, int*, int*);
 void initDatabase(entry*);
 void clearDatabase(entry*, int*);
 
@@ -69,9 +78,13 @@ void export(entry*, int);
 void import(entry*, int*);
 
 // Language Tool Functions
-void switchLTMenu(int, int*, int*, int*);
-void identifyML(int*, int*, int*);
-int emptyLanguageMember(languageType[], int);
-int emptyMatchingMember(matchingType[], int);
-int matchingPairs(str[], matchingType[], int*, int);
+void splitSentence(char[], str[], int*);
+void splitSentenceSpecs(char[], str[], int*);
 void fileReader(str, str[], char[], int*, int*);
+int matchingPairs(str[], matchingType[], int*, int);
+int emptyMatchingMember(matchingType[], int);
+int emptyLanguageMember(languageType[], int);
+void getSentence(char[]);
+void identifyML(int*, int*, int*, char[]);
+int findTranslation(str, str[][MAX_ENTRIES], str);
+void simpleTranslation(char[]);
