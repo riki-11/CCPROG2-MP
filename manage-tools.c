@@ -1743,6 +1743,18 @@ identifyML(int *pInputElem, int *pLineElem, int *pFileWords, char strFilename[])
             if (aLanguages[max].nLanguageCount < aLanguages[i].nLanguageCount)
                 max = i;
         printf("Main Language: %s\n", aLanguages[max].language);
+        
+        max2 = 0;
+        for (i = 0; i < nLanguages-1; i++)
+        {
+            if (max == 0)
+                if ((aLanguages[max2+1].nLanguageCount >= aLanguages[i+1].nLanguageCount) && (strcmp(aLanguages[i+1].language, aLanguages[max].language) != 0))   
+                    max2 = i-1;
+            else 
+                if ((aLanguages[max2].nLanguageCount <= aLanguages[i].nLanguageCount) && (strcmp(aLanguages[i].language, aLanguages[max].language) != 0))
+                    max2 = i;
+        }
+        printf("Top 2 languages are: %s and %s\n", aLanguages[max].language, aLanguages[max2].language);
     }
 }
 
