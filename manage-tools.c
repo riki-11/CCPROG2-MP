@@ -185,9 +185,18 @@ switchLTMenu(int nMLInput,
 {
     char strFilename[31],
          cDump;
+    FILE *pText;
 
-    printf("Enter filename: ");
-    scanf(" %s%c", strFilename, &cDump); //receives filename and dumps enter key
+    do 
+    {
+        printf("Input filename (including extension): ");
+        scanf("%s%c", strFilename, &cDump); //receives filename and dumps enter key
+
+        if (strlen(strFilename) > 30)
+            printf("Filename is too long, maximum of 30 characters only.\n");
+        if ((pText = fopen(strFilename, "r")) == NULL)
+            printf("File cannot be opened.\n");
+    } while (strlen(strFilename) > 30 || ((pText = fopen(strFilename, "r")) == NULL));
     
     switch(nMLInput)
     {
@@ -1744,13 +1753,17 @@ identifyML(int *pInputElem, int *pLineElem, int *pFileWords, char strFilename[])
                 max = i;
         printf("Main Language: %s\n", aLanguages[max].language);
         
-        max2 = 0;
-        for (i = 0; i < nLanguages-1; i++)
+        if (max == 0)
         {
-            if (max == 0)
-                if ((aLanguages[max2+1].nLanguageCount >= aLanguages[i+1].nLanguageCount) && (strcmp(aLanguages[i+1].language, aLanguages[max].language) != 0))   
-                    max2 = i-1;
-            else 
+            max2 = 1;
+            for (i = 1; i < nLanguages-1; i++)
+                if ((aLanguages[max2].nLanguageCount <= aLanguages[i].nLanguageCount) && (strcmp(aLanguages[i].language, aLanguages[max].language) != 0))
+                    max2 = i;
+        }
+        else
+        {
+            max2 = 0;
+            for (i = 0; i < nLanguages-1; i++)
                 if ((aLanguages[max2].nLanguageCount <= aLanguages[i].nLanguageCount) && (strcmp(aLanguages[i].language, aLanguages[max].language) != 0))
                     max2 = i;
         }
