@@ -111,8 +111,7 @@ switchMainMenu(int nMMInput,
             {
                 displayLTMenu();
                 getLTInput(pMLInput);
-                if (*pMLInput != 3)
-                    switchLTMenu(*pMLInput, pInputElem, pLineElem, pFileWords);
+                switchLTMenu(*pMLInput, pInputElem, pLineElem, pFileWords);
             } while (*pMLInput != 3);
             break;
         default:
@@ -668,14 +667,13 @@ modifyEntry(entry aEntries[],
                     printf("Modify the language or translation? ('L' - language | 'T' - translation | 'X' - Exit): ");
                     scanf(" %c", &cModPair);
                     
-                    // MAKE THIS SECTION LESS REDUNDANT
                     switch (cModPair)
                     {
                         case 'L':
                         case 'l':
                             printf("Input new language to replace \"%s\": ", aEntries[nEntryChoice].aPairs[nPairChoice].language);
                             scanf("%s", strLanguage);
-                            // add checking if string is valid? (i.e., at least 1 char)
+                            
                             printf("Replacing \"%s\" with \"%s\"...\n\n", aEntries[nEntryChoice].aPairs[nPairChoice].language, strLanguage);
                             strcpy(aEntries[nEntryChoice].aPairs[nPairChoice].language, strLanguage);
                             // Ask user if they wish to modify more pairs within the entry
@@ -690,7 +688,7 @@ modifyEntry(entry aEntries[],
                         case 't':
                             printf("\nInput new word to replace \"%s\": ", aEntries[nEntryChoice].aPairs[nPairChoice].translation);
                             scanf("%s", strWord);
-                            // add checking if string is valid? (i.e., at least 1 char)
+
                             printf("\nReplacing \"%s\" with \"%s\"...\n\n", aEntries[nEntryChoice].aPairs[nPairChoice].translation, strWord);
                             strcpy(aEntries[nEntryChoice].aPairs[nPairChoice].translation, strWord);
                             // Ask user if they wish to modify more pairs within the entry
@@ -1189,14 +1187,13 @@ export(entry aEntries[],
 
     do 
     {
-        strcpy(strFilename, "");
         printf("Input filename (including extension): ");
         scanf("%s", strFilename);
 
-        if (strlen(strFilename) >= 30)
+        if (strlen(strFilename) > 30)
             printf("\nFilename is too long, maximum of 30 characters only.\n");
 
-    } while (strlen(strFilename) >= 30);
+    } while (strlen(strFilename) > 30);
 
     printf("\nExporting...\n");
     
@@ -1230,9 +1227,16 @@ import(entry aEntries[],
     entry newEntry, blankEntry;
     int nPairCount = 0, nNew = 0;
     char cLoad, *sToken, buffer[50];
-    
-    printf("Input a text file containing entries you wish to import: ");
-    scanf("%s", sFilename);
+     
+    do 
+    {
+        printf("Input a text file containing entries you wish to import: ");
+        scanf("%s", strFilename);
+
+        if (strlen(strFilename) > 30)
+            printf("\nFilename is too long, maximum of 30 characters only.\n");
+
+    } while (strlen(strFilename) > 30);
 
     if ((fp = fopen(sFilename, "r")) != NULL)
     {
@@ -1831,70 +1835,70 @@ simpleTranslation(char strFilename[])
     do
     {
 
-    // resets variables
-    memset(strInputWords, 0, sizeof(char)*MAX_ENTRIES);
-    nWordCount = 0;
+        // resets variables
+        memset(strInputWords, 0, sizeof(char)*MAX_ENTRIES);
+        nWordCount = 0;
 
-    // retrieves sentence/phrase from user
-    getSentence(strInputSentence);
-    // splits the sentence/phrase from user into different words
-    splitSentenceSpecs(strInputSentence, strInputWords, &nWordCount);
+        // retrieves sentence/phrase from user
+        getSentence(strInputSentence);
+        // splits the sentence/phrase from user into different words
+        splitSentenceSpecs(strInputSentence, strInputWords, &nWordCount);
 
-    // if file can be opened and read
-    if ((pText = fopen(strFilename, "r")) != NULL)
-    {
-        // while the file has not reached the end of file
-        while(!feof(pText))
+        // if file can be opened and read
+        if ((pText = fopen(strFilename, "r")) != NULL)
         {
-            // retrieves the current line until \n
-            fgets(strFileSentence, 151, pText);
-            // removes the \n and replaces it with \0
-            strFileSentence[strlen(strFileSentence) - 1] = '\0';
-
-            // if the string is not empty
-            if (strcmp(&strFileSentence[0], "") != 0)
+            // while the file has not reached the end of file
+            while(!feof(pText))
             {
-                // split file's current line into separate words
-                splitSentence(strFileSentence, strTempWords, &nTempCount);
-                strcpy(strFileTranslations[i][j], strTempWords[nTempCount-2]);
-                strcpy(strFileTranslations[i][j+1], strTempWords[nTempCount-1]);
-                j+=2;
-            }
+                // retrieves the current line until \n
+                fgets(strFileSentence, 151, pText);
+                // removes the \n and replaces it with \0
+                strFileSentence[strlen(strFileSentence) - 1] = '\0';
 
-            // the string is empty
-            else if (strcmp(&strFileSentence[0], "") == 0)
-            {
-                i++;
-                j = 0;
+                // if the string is not empty
+                if (strcmp(&strFileSentence[0], "") != 0)
+                {
+                    // split file's current line into separate words
+                    splitSentence(strFileSentence, strTempWords, &nTempCount);
+                    strcpy(strFileTranslations[i][j], strTempWords[nTempCount-2]);
+                    strcpy(strFileTranslations[i][j+1], strTempWords[nTempCount-1]);
+                    j+=2;
+                }
+
+                // the string is empty
+                else if (strcmp(&strFileSentence[0], "") == 0)
+                {
+                    i++;
+                    j = 0;
+                }
             }
+            fclose(pText); // close file
         }
-        fclose(pText); // close file
-    }
-    // if file cannot be opened
-    else printf("Cannot open file for reading.\n");
-    
-    // loop for number of words
-    for (i = 0; i < nWordCount; i++)
-    {
-        // retrieve index of translation
-        index = findTranslation(strSourceLanguage, strFileTranslations, strInputWords[i]);
-        // if index is found
-        if (index > -1)
-            // loop for max number of language and word count
-            for (j = 0; j < MAX_PAIRS*2; j++)
-                // if translation language is found
-                if (strcmp(strTranslatedLanguage, strFileTranslations[index][j]) == 0)
-                    strcpy(strInputWords[i], strFileTranslations[index][j+1]); // replace word with translated word
-    }
+        // if file cannot be opened
+        else printf("Cannot open file for reading.\n");
 
-    // prints the translated sentence
-    printf("Translated Sentence: ");
-    for (i = 0; i < nWordCount; i++)
-        printf("%s ", strInputWords[i]);
-    
-    // asks user if they want to translate a different sentence
-    printf("\nDo you want to translate a different sentence? [Y/N]: ");
-    scanf("%c%c", &cOpt, &cDump);
+        // loop for number of words
+        for (i = 0; i < nWordCount; i++)
+        {
+            // retrieve index of translation
+            index = findTranslation(strSourceLanguage, strFileTranslations, strInputWords[i]);
+            // if index is found
+            if (index > -1)
+                // loop for max number of language and word count
+                for (j = 0; j < MAX_PAIRS*2; j++)
+                    // if translation language is found
+                    if (strcmp(strTranslatedLanguage, strFileTranslations[index][j]) == 0)
+                        strcpy(strInputWords[i], strFileTranslations[index][j+1]); // replace word with translated word
+        }
+
+        // prints the translated sentence
+        printf("Translated Sentence: ");
+        for (i = 0; i < nWordCount; i++)
+            printf("%s ", strInputWords[i]);
+
+        // asks user if they want to translate a different sentence
+        printf("\nDo you want to translate a different sentence? [Y/N]: ");
+        scanf("%c%c", &cOpt, &cDump);
     
     } while ((cOpt == 'Y' || cOpt == 'y'));
 }
