@@ -1223,7 +1223,7 @@ import(entry aEntries[],
        int *pCount)
 {
     FILE *fp;
-    str sFilename;
+    str strFilename;
     entry newEntry, blankEntry;
     int nPairCount = 0, nNew = 0;
     char cLoad, *sToken, buffer[50];
@@ -1238,7 +1238,7 @@ import(entry aEntries[],
 
     } while (strlen(strFilename) > 30);
 
-    if ((fp = fopen(sFilename, "r")) != NULL)
+    if ((fp = fopen(strFilename, "r")) != NULL)
     {
         // If database is still empty
         if (*pCount == 0)
@@ -1282,7 +1282,7 @@ import(entry aEntries[],
                 // Inform user if database reaches max capacity during importing
                 else
                 {
-                    printf("\nSuccessfully imported %d new entry/entries coming from \"%s\".\n", nNew, sFilename);
+                    printf("\nSuccessfully imported %d new entry/entries coming from \"%s\".\n", nNew, strFilename);
                     printf("\nDatabase has reached full capacity of 150 entries. "
                            "Delete entries using Delete Entry to continue adding entries."
                            "\nReturning to Manage Data Menu...\n");
@@ -1291,7 +1291,7 @@ import(entry aEntries[],
             }
 
             // Tell user how many entries were imported
-            printf("\nSuccessfully imported %d new entry/entries coming from \"%s\".\n", nNew, sFilename);
+            printf("\nSuccessfully imported %d new entry/entries coming from \"%s\".\n", nNew, strFilename);
         }
         
         // If database contains at least 1 but less than maximum entry/entries
@@ -1373,7 +1373,7 @@ import(entry aEntries[],
                 }
             }
 
-            printf("\nSuccessfully imported %d new entry/entries coming from \"%s\".\n", nNew, sFilename);
+            printf("\nSuccessfully imported %d new entry/entries coming from \"%s\".\n", nNew, strFilename);
         }
         // If database was full prior to importing
         else
@@ -1681,7 +1681,8 @@ identifyML(int *pInputElem, int *pLineElem, int *pFileWords, char strFilename[])
                     nLanguages, 
                     nDuplicate, 
                     index = 0,
-                    max = 0;
+                    max = 0,
+                    max2 = 0;
 
     // resetting variables
     *pInputElem = 0;
