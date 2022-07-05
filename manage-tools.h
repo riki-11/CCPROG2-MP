@@ -54,7 +54,7 @@ void getMDInput(int*);
 void getLTInput(int*);
 void switchMainMenu(int, int*, entry*, int*, int*, int*, int*);
 void switchMDMenu(int, entry*, int*);
-void switchLTMenu(int, int*, int*, int*);
+void switchLTMenu(int, int*, int*, int*, char*);
 void initDatabase(entry*);
 void clearDatabase(entry*, int*);
 
@@ -70,7 +70,7 @@ void modifyEntry(entry*, int);
 void deleteEntry(entry*, int*);
 void deleteTranslation(entry*, int*);
 void sortEntries(entry*, int);
-void displayEntry(entry*, int, int);
+void displayEntry(entry, int, int);
 void displayAllEntries(entry*, int);
 void searchWord(entry*, int);
 void searchTranslation(entry*, int);

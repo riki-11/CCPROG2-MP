@@ -1,0 +1,11 @@
+Vietnamese: chao
+Italian: ciao
+Filipino: hi
+
+Spanish: hi
+English: hi
+
+Russian: yes
+Korean: annyeong
+Japanese: Konnichiwa
+

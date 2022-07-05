@@ -93,6 +93,10 @@ switchMainMenu(int nMMInput,
                int *pLineElem, 
                int *pFileWords)
 {
+    char strFilename[31], 
+         cDump;
+    FILE *pText;
+
     switch(nMMInput)
     {
         case 1:
@@ -110,8 +114,21 @@ switchMainMenu(int nMMInput,
             do
             {
                 displayLTMenu();
+    
+                // Load file before selecting Language Tool option
+                do 
+                {
+                    printf("Input filename (including extension): ");
+                    scanf("%s%c", strFilename, &cDump); //receives filename and dumps enter key
+
+                    if (strlen(strFilename) > 30)
+                        printf("Filename is too long, maximum of 30 characters only.\n");
+                    if ((pText = fopen(strFilename, "r")) == NULL)
+                        printf("File cannot be opened.\n");
+                } while (strlen(strFilename) > 30 || ((pText = fopen(strFilename, "r")) == NULL));
+
                 getLTInput(pMLInput);
-                switchLTMenu(*pMLInput, pInputElem, pLineElem, pFileWords);
+                switchLTMenu(*pMLInput, pInputElem, pLineElem, pFileWords, strFilename);
             } while (*pMLInput != 3);
             break;
         default:
@@ -175,28 +192,15 @@ switchMDMenu(int nMLInput,
     @param pInputElem - number of words in the sentence/phrase of the user input
     @param pLineElem - number of words in the line
     @param pFileWords - number of words in the source file
+    @param strFilename - string of the filename to be opened 
 */
 void
 switchLTMenu(int nMLInput, 
              int *pInputElem, 
              int *pLineElem, 
-             int *pFileWords)
-{
-    char strFilename[31],
-         cDump;
-    FILE *pText;
-
-    do 
-    {
-        printf("Input filename (including extension): ");
-        scanf("%s%c", strFilename, &cDump); //receives filename and dumps enter key
-
-        if (strlen(strFilename) > 30)
-            printf("Filename is too long, maximum of 30 characters only.\n");
-        if ((pText = fopen(strFilename, "r")) == NULL)
-            printf("File cannot be opened.\n");
-    } while (strlen(strFilename) > 30 || ((pText = fopen(strFilename, "r")) == NULL));
-    
+             int *pFileWords,
+             char strFilename[])
+{    
     switch(nMLInput)
     {
         case 1:
@@ -652,7 +656,7 @@ modifyEntry(entry aEntries[],
                 // Show all information and pairs for selected entry
                 printf("\nModifying this entry:\n");
                 sortEntries(aEntries, nCount);
-                displayEntry(&aEntries[nEntryChoice], nEntryChoice, aEntries[nEntryChoice].nPairs);
+                displayEntry(aEntries[nEntryChoice], nEntryChoice + 1, aEntries[nEntryChoice].nPairs);
 
                 // Prompt user for pair to modify (add feature to let them cancel?)
                 printf("\nWhich pair do you wish to modify: ");
@@ -822,7 +826,7 @@ deleteTranslation(entry aEntries[],
                 // Show all information and pairs for selected entry
                 printf("\nDeleting a pair within this entry:\n");
                 sortEntries(aEntries, *pCount);
-                displayEntry(&aEntries[nEntryChoice], nEntryChoice + 1, nPairCount);
+                displayEntry(aEntries[nEntryChoice], nEntryChoice + 1, nPairCount);
 
                 // Prompt user for pair to delete (add feature to let them cancel?)
                 printf("\nWhich pair do you wish to delete: ");
@@ -938,20 +942,20 @@ sortEntries(entry aEntries[],
 }
 
 /*  Function for displaying a SINGLE entry
-    @param *Entry - pointer to entry to be displayed
+    @param Entry - entry to be displayed
     @param nEntryNum - number of entry being displayed
     @param nPairCount - no. of pairs within entry
 */
-void displayEntry(entry *Entry, 
+void displayEntry(entry Entry, 
                   int nEntryNum, 
                   int nPairCount)
 {
     int i;
-    // Print entry and its pairs after sorting
+    // Print entry and its pairs
     printf("--------------------------------\n");
-    printf("Entry No. %d with %d pair/s\n\n", nEntryNum, Entry->nPairs);
+    printf("Entry No. %d with %d pair/s\n\n", nEntryNum, Entry.nPairs);
     for (i = 0; i < nPairCount; i++)
-        printf("Pair No. %d || Language: %s | Translation: %s\n", i + 1, Entry->aPairs[i].language, Entry->aPairs[i].translation);
+        printf("Pair No. %d || Language: %s | Translation: %s\n", i + 1, Entry.aPairs[i].language, Entry.aPairs[i].translation);
     printf("--------------------------------\n");
 }
 
@@ -975,7 +979,7 @@ displayAllEntries(entry aEntries[],
     while (i < nCount && i >= 0 && (ch == 'N' || ch == 'n' || ch == 'P' || ch == 'p'))
     {
         // Print the entry and its pairs
-        displayEntry(&aEntries[i], i + 1, aEntries[i].nPairs);
+        displayEntry(aEntries[i], i + 1, aEntries[i].nPairs);
         
         // GUI printing
         // If only one entry
@@ -1032,12 +1036,15 @@ searchWord(entry aEntries[],
     // Linearly search through every entry and pair, since words are not sorted in any way.
     for (i = 0; i < nCount; i++)
         for (j = 0; j < aEntries[i].nPairs; j++)
+
             // If inputted word matches translation in specific pair, case-sensitively
             if (strcmp(strWord, aEntries[i].aPairs[j].translation) == 0)
             {
                 // Store entry no. in aFound
                 aFound[nFound] = i;
                 nFound++;
+                // Immediately move on to the following entries
+                j = aEntries[i].nPairs;
             }
 
     if (nFound == 0)
@@ -1053,7 +1060,7 @@ searchWord(entry aEntries[],
             
             // Print the entry and its pairs
             sortEntries(aEntries, nCount);
-            displayEntry(&aEntries[nEntryIndex], nEntryIndex + 1, aEntries[nEntryIndex].nPairs);
+            displayEntry(aEntries[nEntryIndex], nEntryIndex + 1, aEntries[nEntryIndex].nPairs);
 
             // GUI printing
             // If only one entry was found
@@ -1135,7 +1142,7 @@ searchTranslation(entry aEntries[],
             
             // Print the entry and its pairs
             sortEntries(aEntries, nCount);
-            displayEntry(&aEntries[nEntryIndex], nEntryIndex + 1, aEntries[nEntryIndex].nPairs);
+            displayEntry(aEntries[nEntryIndex], nEntryIndex + 1, aEntries[nEntryIndex].nPairs);
 
             // GUI printing
             // If only one entry was found
@@ -1314,7 +1321,7 @@ import(entry aEntries[],
                     {
                         // Display the entry that's been found
                         sortEntries(aEntries, *pCount);
-                        displayEntry(&newEntry, 0, nPairCount);
+                        displayEntry(newEntry, 0, nPairCount);
 
                         do
                         {
@@ -1470,7 +1477,7 @@ splitSentenceSpecs(char strSentence[], str strWords[], int *pElem)
                 strWords[*pElem][j] = '\0'; // ends the previous word
                 j = 0; // resets letter space to begin a new word
                 (*pElem)++; // moves to the next word element
-                nPunc = 0; // resets number of punctations  
+                nPunc = 0; // resets number of punctuations  
             }
         }
 
@@ -1758,9 +1765,11 @@ identifyML(int *pInputElem, int *pLineElem, int *pFileWords, char strFilename[])
                 max = i;
         printf("Main Language: %s\n", aLanguages[max].language);
         
+        // If the first language (index 0) is the most abundant
         if (max == 0)
         {
             max2 = 1;
+            // Find the second most abundant language in succeeding entries
             for (i = 1; i < nLanguages-1; i++)
                 if ((aLanguages[max2].nLanguageCount <= aLanguages[i].nLanguageCount) && (strcmp(aLanguages[i].language, aLanguages[max].language) != 0))
                     max2 = i;
@@ -1769,6 +1778,7 @@ identifyML(int *pInputElem, int *pLineElem, int *pFileWords, char strFilename[])
         {
             max2 = 0;
             for (i = 0; i < nLanguages-1; i++)
+                // Find second most abundant language, EXCEPT for the max1 entry
                 if ((aLanguages[max2].nLanguageCount <= aLanguages[i].nLanguageCount) && (strcmp(aLanguages[i].language, aLanguages[max].language) != 0))
                     max2 = i;
         }
