@@ -1293,6 +1293,7 @@ import(entry aEntries[],
                     printf("\nDatabase has reached full capacity of 150 entries. "
                            "Delete entries using Delete Entry to continue adding entries."
                            "\nReturning to Manage Data Menu...\n");
+                    fclose(fp);
                     return;
                 }
             }
@@ -1376,6 +1377,7 @@ import(entry aEntries[],
                     printf("\nDatabase has reached full capacity of 150 entries. "
                            "Delete entries using Delete Entry to continue adding entries."
                            "\nReturning to Manage Data Menu...\n");
+                    fclose(fp);
                     return;
                 }
             }
@@ -1796,18 +1798,24 @@ identifyML(int *pInputElem, int *pLineElem, int *pFileWords, char strFilename[])
 */
 
 int
-findTranslation(str strSourceLanguage, str strFileTranslations[][MAX_ENTRIES], str strCurrentWord)
+findTranslation(str strSourceLanguage, str strFileTranslations[][MAX_ENTRIES], str strCurrentWord, str strTranslatedLanguage)
 {
-    int i, j;
+    int i, j, k;
 
+    // Go through all entries
     for (i = 0; i < MAX_ENTRIES; i++)
     {
+        // GO through all pairs
         for (j = 0; j < MAX_PAIRS*2; j++)
         {
+            // If source language + translation was found in entry
             if (strcmp(strSourceLanguage, strFileTranslations[i][j]) == 0 &&
                 strcmp(strCurrentWord, strFileTranslations[i][j+1]) == 0)
                 {
-                    return i;
+                    // Check if language to be translated to is also present within same entry
+                    for (k = 0; k < MAX_PAIRS*2; k++)
+                        if (strcmp(strTranslatedLanguage, strFileTranslations[i][k]) == 0)
+                            return i;
                 }
         }
     }
@@ -1845,7 +1853,6 @@ simpleTranslation(char strFilename[])
 
     do
     {
-
         // resets variables
         memset(strInputWords, 0, sizeof(char)*MAX_ENTRIES);
         nWordCount = 0;
@@ -1892,7 +1899,7 @@ simpleTranslation(char strFilename[])
         for (i = 0; i < nWordCount; i++)
         {
             // retrieve index of translation
-            index = findTranslation(strSourceLanguage, strFileTranslations, strInputWords[i]);
+            index = findTranslation(strSourceLanguage, strFileTranslations, strInputWords[i], strTranslatedLanguage);
             // if index is found
             if (index > -1)
                 // loop for max number of language and word count

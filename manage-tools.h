@@ -86,5 +86,5 @@ int emptyMatchingMember(matchingType[], int);
 int emptyLanguageMember(languageType[], int);
 void getSentence(char[]);
 void identifyML(int*, int*, int*, char[]);
-int findTranslation(str, str[][MAX_ENTRIES], str);
+int findTranslation(str, str[][MAX_ENTRIES], str, str);
 void simpleTranslation(char[]);

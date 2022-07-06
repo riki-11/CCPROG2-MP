@@ -1,5 +1,6 @@
 Cebuano: mahal
 English: expensive
+Ilocano: nangina
 Kapampangan: mal
 Mandarin: gui
 Tagalog: mahal
@@ -15,11 +16,6 @@ Mandarin: ai
 Spanish: amor
 Tagalog: mahal
 
-Fookien: ahma
-Mandarin: tzumu
-Spanish: abuela
-Tagalog: lola
-
 English: i
 Fookien: gua
 Mandarin: wo
@@ -31,15 +27,29 @@ Mandarin: ni
 Tagalog: ikaw
 
 Cebuano: buhi
-English: life
 Tagalog: buhay
 
 Hiligaynon: tagpila
 Mandarin: tuoshao
 Tagalog: magkano
 
-Hiligaynon: dili
 English: not
-Tagalog: hindi
 Fookien: bo
+Hiligaynon: dili
+Tagalog: hindi
+
+Cebuano: suba
+Chinese: ho
+Filipino: batis
+French: fleuve
+Ilocano: karayan
+Mandarin: tsiang
+Tagalog: ilog
+
+English: bathe
+Mandarin: sitsao
+Tagalog: ligo
+
+English: lake
+Tagalog: ilog
 
